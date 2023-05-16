@@ -2,19 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class GridManager : MonoBehaviour
 {
     [SerializeField] private int width, height;
     [SerializeField] private Tile tilePrefab;
     [SerializeField] private Transform cam;
     private Dictionary<Vector2, Tile> tiles;
-    [SerializeField] private int player;
-
-    private List<Tile> selectedTiles = new List<Tile>();
+    public int player;
+    private Tile selectedTile;
 
     private void Start()
     {
-        this.player = 1;
+        this.player = 2;
         GenerateGrid();
     }
 
@@ -72,9 +72,9 @@ public class GridManager : MonoBehaviour
 
     public bool SelectTile(Tile tile)
     {
-        if (tile.value == this.player)
+        if (tile.value == this.player && this.selectedTile == null)
         {
-            this.selectedTiles.Add(tile);
+            this.selectedTile = tile;
             return true;
         }
         else
@@ -87,7 +87,7 @@ public class GridManager : MonoBehaviour
     {
         if (tile.value == this.player && this.IsSelected(tile))
         {
-            this.selectedTiles.Remove(tile);
+            this.selectedTile = null;
             return true;
         }
         else
@@ -98,15 +98,35 @@ public class GridManager : MonoBehaviour
 
     public void ClearSelection()
     {
-        this.selectedTiles.Clear();
+        this.selectedTile = null;
     }
 
     public bool IsSelected(Tile tile)
     {
-        return this.selectedTiles.Contains(tile);
+        return this.selectedTile == tile;
     }
 
+    public bool OnSelection()
+    {
+        return this.selectedTile != null;
+    }
 
+    public bool AllowedPos(Tile tile)
+    {
+        bool otherTile = this.selectedTile && this.selectedTile.value != tile.value;
+        if (otherTile)
+        {
+            bool d1 = this.selectedTile.y - tile.y == 0 && this.selectedTile.x - tile.x == 1;
+            bool d2 = this.selectedTile.y - tile.y == -1 && this.selectedTile.x - tile.x == 1;
+            bool d3 = this.selectedTile.y - tile.y == -1 && this.selectedTile.x - tile.x == 0;
+            bool d4 = this.selectedTile.y - tile.y == 0 && this.selectedTile.x - tile.x == -1;
+            bool d5 = this.selectedTile.y - tile.y == 1 && this.selectedTile.x - tile.x == -1;
+            bool d6 = this.selectedTile.y - tile.y == 1 && this.selectedTile.x - tile.x == 0;
+
+            return d1 || d2 || d3 || d4 || d5 || d6;
+        }
+        return false;
+    }
     // public Tile GetTile(Vector2 pos)
     // {
     //     if (this.tiles.TryGetValue(pos, out var tile))
