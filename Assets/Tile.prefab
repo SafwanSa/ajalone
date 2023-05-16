@@ -101,6 +101,8 @@ MonoBehaviour:
   _renderer: {fileID: 2446337716350506918}
   highlight: {fileID: 4454969660919456359}
   selected: {fileID: 5274539920068575424}
+  x: 0
+  y: 0
   value: 0
 --- !u!58 &2936046487697283899
 CircleCollider2D:

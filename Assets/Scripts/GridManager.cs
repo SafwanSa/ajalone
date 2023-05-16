@@ -50,12 +50,21 @@ public class GridManager : MonoBehaviour
         for (int y = 1; y <= 9; y++)
         {
             int numOfBalls = this.GetNumOfBallsInRow(y);
+            int x = 0;
+            if (y <= 5)
+                x = 1;
+            else
+            {
+
+                x = 5 - (9 - y);
+                numOfBalls += (x - 1);
+            }
             // Cols
-            for (int x = 1; x <= numOfBalls; x++)
+            for (; x <= numOfBalls; x++)
             {
                 var spawnedTile = Instantiate(this.tilePrefab, new Vector3(x, y), Quaternion.identity);
                 var radius = (float)spawnedTile.GetComponent<CircleCollider2D>().radius;
-                var xOffSet = y < 5 ? x - (radius * y) : x - (radius * (5 - y % 5));
+                var xOffSet = x - (radius * y);
                 spawnedTile.transform.position = new Vector3(xOffSet * 1.05f, y * 1.05f);
                 spawnedTile.name = $"Tile {y} {x}";
                 spawnedTile.Init(x, y, this);
@@ -70,35 +79,36 @@ public class GridManager : MonoBehaviour
         this.cam.position = new Vector3(center.x, center.y, -10f);
     }
 
-    public bool SelectTile(Tile tile)
+    public void SelectTile(Tile tile)
     {
         if (tile.value == this.player && this.selectedTile == null)
         {
             this.selectedTile = tile;
-            return true;
+            this.selectedTile.selected.SetActive(true);
+        }
+        else if (tile.value != this.player && this.AllowedPos(tile))
+        {
+            // Move
+            var tempVal = tile.value;
+            tile.value = this.selectedTile.value;
+            this.selectedTile.value = tempVal;
+            this.selectedTile.UpdateColor();
+            tile.UpdateColor();
+            this.UnSelectTile();
         }
         else
         {
-            return false;
+
         }
     }
 
-    public bool UnSelectTile(Tile tile)
+    public void UnSelectTile()
     {
-        if (tile.value == this.player && this.IsSelected(tile))
+        if (this.selectedTile)
         {
+            this.selectedTile.selected.SetActive(false);
             this.selectedTile = null;
-            return true;
         }
-        else
-        {
-            return false;
-        }
-    }
-
-    public void ClearSelection()
-    {
-        this.selectedTile = null;
     }
 
     public bool IsSelected(Tile tile)
@@ -116,12 +126,12 @@ public class GridManager : MonoBehaviour
         bool otherTile = this.selectedTile && this.selectedTile.value != tile.value;
         if (otherTile)
         {
-            bool d1 = this.selectedTile.y - tile.y == 0 && this.selectedTile.x - tile.x == 1;
-            bool d2 = this.selectedTile.y - tile.y == -1 && this.selectedTile.x - tile.x == 1;
-            bool d3 = this.selectedTile.y - tile.y == -1 && this.selectedTile.x - tile.x == 0;
-            bool d4 = this.selectedTile.y - tile.y == 0 && this.selectedTile.x - tile.x == -1;
-            bool d5 = this.selectedTile.y - tile.y == 1 && this.selectedTile.x - tile.x == -1;
-            bool d6 = this.selectedTile.y - tile.y == 1 && this.selectedTile.x - tile.x == 0;
+            bool d1 = this.selectedTile.y - tile.y == 0 && this.selectedTile.x - tile.x == -1;
+            bool d2 = this.selectedTile.y - tile.y == 1 && this.selectedTile.x - tile.x == 0;
+            bool d3 = this.selectedTile.y - tile.y == 1 && this.selectedTile.x - tile.x == 1;
+            bool d4 = this.selectedTile.y - tile.y == 0 && this.selectedTile.x - tile.x == 1;
+            bool d5 = this.selectedTile.y - tile.y == -1 && this.selectedTile.x - tile.x == 0;
+            bool d6 = this.selectedTile.y - tile.y == -1 && this.selectedTile.x - tile.x == -1;
 
             return d1 || d2 || d3 || d4 || d5 || d6;
         }

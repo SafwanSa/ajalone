@@ -6,7 +6,7 @@ public class Tile : MonoBehaviour
 {
     [SerializeField] private SpriteRenderer _renderer;
     [SerializeField] private GameObject highlight;
-    [SerializeField] private GameObject selected;
+    public GameObject selected;
     private GridManager grid;
     public int x, y;
     public int value = 0;
@@ -20,7 +20,7 @@ public class Tile : MonoBehaviour
         int value = 0;
         if (y < 3 || (y == 3 && x > 2 && x < 6))
             value = 1;
-        else if (y >= 8 || (y == 7 && x > 2 && x < 6))
+        else if (y >= 8 || (y == 7 && x > 4 && x < 8))
             value = 2;
         else
             value = 0;
@@ -38,26 +38,26 @@ public class Tile : MonoBehaviour
             this._renderer.color = Color.black;
     }
 
-    void OnMouseEnter()
-    {
-        if (this.grid.AllowedPos(this))
-            this.highlight.SetActive(true);
-    }
-    void OnMouseExit()
-    {
-        if (this.grid.AllowedPos(this))
-            this.highlight.SetActive(false);
-    }
+    // void OnMouseEnter()
+    // {
+    //     if (this.grid.AllowedPos(this))
+    //         this.highlight.SetActive(true);
+    // }
+    // void OnMouseExit()
+    // {
+    //     if (this.grid.AllowedPos(this))
+    //         this.highlight.SetActive(false);
+    // }
 
     void OnMouseDown()
     {
         if (this.grid.IsSelected(this))
         {
-            this.selected.SetActive(!this.grid.UnSelectTile(this));
+            this.grid.UnSelectTile();
         }
         else
         {
-            this.selected.SetActive(this.grid.SelectTile(this));
+            this.grid.SelectTile(this);
         }
     }
 }
