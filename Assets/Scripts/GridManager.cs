@@ -8,12 +8,15 @@ public class GridManager : MonoBehaviour
     [SerializeField] private Tile tilePrefab;
     [SerializeField] private Transform cam;
     private Dictionary<Vector2, Tile> tiles;
+    [SerializeField] private int player;
+
+    private List<Tile> selectedTiles = new List<Tile>();
 
     private void Start()
     {
+        this.player = 1;
         GenerateGrid();
     }
-
 
     private int GetNumOfBallsInRow(int row)
     {
@@ -55,7 +58,7 @@ public class GridManager : MonoBehaviour
                 var xOffSet = y < 5 ? x - (radius * y) : x - (radius * (5 - y % 5));
                 spawnedTile.transform.position = new Vector3(xOffSet * 1.05f, y * 1.05f);
                 spawnedTile.name = $"Tile {y} {x}";
-                spawnedTile.Init(x, y);
+                spawnedTile.Init(x, y, this);
 
                 // Save center tile pos
                 if (xOffSet == 2.5f && y == 5)
@@ -67,16 +70,52 @@ public class GridManager : MonoBehaviour
         this.cam.position = new Vector3(center.x, center.y, -10f);
     }
 
-
-    public Tile GetTile(Vector2 pos)
+    public bool SelectTile(Tile tile)
     {
-        if (this.tiles.TryGetValue(pos, out var tile))
+        if (tile.value == this.player)
         {
-            return tile;
+            this.selectedTiles.Add(tile);
+            return true;
         }
         else
         {
-            return null;
+            return false;
         }
     }
+
+    public bool UnSelectTile(Tile tile)
+    {
+        if (tile.value == this.player && this.IsSelected(tile))
+        {
+            this.selectedTiles.Remove(tile);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void ClearSelection()
+    {
+        this.selectedTiles.Clear();
+    }
+
+    public bool IsSelected(Tile tile)
+    {
+        return this.selectedTiles.Contains(tile);
+    }
+
+
+    // public Tile GetTile(Vector2 pos)
+    // {
+    //     if (this.tiles.TryGetValue(pos, out var tile))
+    //     {
+    //         return tile;
+    //     }
+    //     else
+    //     {
+    //         return null;
+    //     }
+    // }
 }

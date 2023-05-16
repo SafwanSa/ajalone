@@ -7,11 +7,13 @@ public class Tile : MonoBehaviour
     [SerializeField] private SpriteRenderer _renderer;
     [SerializeField] private GameObject highlight;
     [SerializeField] private GameObject selected;
-
+    private GridManager grid;
     public int value = 0;
 
-    public void Init(int x, int y)
+    public void Init(int x, int y, GridManager grid)
     {
+        this.grid = grid;
+
         int value = 0;
         if (y < 3 || (y == 3 && x > 2 && x < 6))
             value = 1;
@@ -33,20 +35,24 @@ public class Tile : MonoBehaviour
             this._renderer.color = Color.black;
     }
 
-    void OnMouseEnter()
-    {
-        this.highlight.SetActive(true);
-    }
-    void OnMouseExit()
-    {
-        this.highlight.SetActive(false);
-    }
+    // void OnMouseEnter()
+    // {
+    //     this.highlight.SetActive(true);
+    // }
+    // void OnMouseExit()
+    // {
+    //     this.highlight.SetActive(false);
+    // }
 
     void OnMouseDown()
     {
-        if (this.selected.active)
-            this.selected.SetActive(false);
+        if (this.grid.IsSelected(this))
+        {
+            this.selected.SetActive(!this.grid.UnSelectTile(this));
+        }
         else
-            this.selected.SetActive(true);
+        {
+            this.selected.SetActive(this.grid.SelectTile(this));
+        }
     }
 }
