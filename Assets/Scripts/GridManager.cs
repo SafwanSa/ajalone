@@ -89,12 +89,7 @@ public class GridManager : MonoBehaviour
         else if (tile.value != this.player && this.AllowedPos(tile))
         {
             // Move
-            var tempVal = tile.value;
-            tile.value = this.selectedTile.value;
-            this.selectedTile.value = tempVal;
-            this.selectedTile.UpdateColor();
-            tile.UpdateColor();
-            this.UnSelectTile();
+            this.Move(tile);
         }
         else
         {
@@ -137,15 +132,14 @@ public class GridManager : MonoBehaviour
         }
         return false;
     }
-    // public Tile GetTile(Vector2 pos)
-    // {
-    //     if (this.tiles.TryGetValue(pos, out var tile))
-    //     {
-    //         return tile;
-    //     }
-    //     else
-    //     {
-    //         return null;
-    //     }
-    // }
+
+    private void Move(Tile tile)
+    {
+        var tempVal = tile.value;
+        tile.value = this.selectedTile.value;
+        this.selectedTile.value = tempVal;
+        this.selectedTile.UpdateColor();
+        tile.UpdateColor();
+        this.UnSelectTile();
+    }
 }
