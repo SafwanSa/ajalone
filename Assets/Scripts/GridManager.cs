@@ -79,7 +79,7 @@ public class GridManager : MonoBehaviour
                 this.tiles[new Vector2(y, x)] = spawnedTile;
             }
         }
-        this.cam.position = new Vector3(center.x, center.y, -10f);
+        this.cam.position = new Vector3(center.x, center.y, -30f);
     }
 
     private void CalculateTiles()
