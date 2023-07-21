@@ -13,12 +13,42 @@ public class GridManager : MonoBehaviour
     private Tile selectedTile;
     [SerializeField] private int white;
     [SerializeField] private int black;
+    [SerializeField] private List<GameObject> rows;
 
     private void Start()
     {
         this.player = 1;
-        GenerateGrid();
+        // GenerateGrid();
+        GenerateGrid2();
         CalculateTiles();
+    }
+
+    private void GenerateGrid2()
+    {
+        this.tiles = new Dictionary<Vector2, Tile>();
+        for (int i = 0; i < this.rows.Count; i++)
+        {
+            for (int j = 0; j < GetNumOfBallsInRow(i + 1); j++)
+            {
+                GameObject spot = this.rows[i].transform.GetChild(j).gameObject;
+                string[] name = spot.name.Split(char.Parse(" "));
+                int y = int.Parse(name[1]);
+                int x = int.Parse(name[2]);
+                var spawnedTile = Instantiate(this.tilePrefab, new Vector3(spot.transform.position.x, spot.transform.position.y, spot.transform.position.z), Quaternion.identity);
+                spawnedTile.transform.parent = spot.transform;
+                RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
+                trans.anchorMin = new Vector2(0f, 0f);
+                trans.anchorMax = new Vector2(1f, 1f);
+                trans.pivot = new Vector2(0.5f, 0.5f);
+                RectTransformExtensions.SetLeft(trans, 20);
+                RectTransformExtensions.SetTop(trans, 25);
+                RectTransformExtensions.SetRight(trans, 20);
+                RectTransformExtensions.SetBottom(trans, 25);
+                trans.localPosition = new Vector3(trans.localPosition.x, trans.localPosition.y, -1);
+                spawnedTile.Init(x, y, this);
+                this.tiles[new Vector2(y, x)] = spawnedTile;
+            }
+        }
     }
 
     private int GetNumOfBallsInRow(int row)

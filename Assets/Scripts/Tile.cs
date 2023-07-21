@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI.Extensions;
 public class Tile : MonoBehaviour
 {
     [SerializeField] SpriteRenderer _renderer;
@@ -30,12 +30,14 @@ public class Tile : MonoBehaviour
 
     public void UpdateColor()
     {
+
         if (this.value == 0)
             this._renderer.color = Color.grey;
         else if (this.value == 1)
             this._renderer.color = Color.white;
         else
             this._renderer.color = Color.black;
+
     }
 
     // void OnMouseEnter()
