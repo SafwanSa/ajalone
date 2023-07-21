@@ -235,7 +235,7 @@ public class GridManager : MonoBehaviour
             int x = selectedTile.x;
             while (x >= 1 && x <= 9)
             {
-                Tile t = this.GetTile(new Vector2(x, selectedTile.y));
+                Tile t = this.GetTile(new Vector2(selectedTile.y, x));
                 if (t == null) break;
                 directionalValues.Add(t.value);
                 // print($"x={x}   y={selectedTile.y}       value={t.value}");
