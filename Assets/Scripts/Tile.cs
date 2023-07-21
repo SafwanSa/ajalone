@@ -31,12 +31,12 @@ public class Tile : MonoBehaviour
     public void UpdateColor()
     {
 
-        if (this.value == 0)
-            this._renderer.color = Color.clear;
-        else if (this.value == 1)
-            this._renderer.color = Color.white;
-        else
-            this._renderer.color = Color.black;
+        // if (this.value == 0)
+        //     this._renderer.material.SetColor("_Color", Color.clear);
+        // else if (this.value == 1)
+        //     this._renderer.material.SetColor("_Color", Color.white);
+        // else
+        //     this._renderer.material.SetColor("_Color", Color.black);
 
     }
 
