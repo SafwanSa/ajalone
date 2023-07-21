@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
-    [SerializeField] private SpriteRenderer _renderer;
-    [SerializeField] private GameObject highlight;
+    [SerializeField] SpriteRenderer _renderer;
+    public GameObject highlight;
     public GameObject selected;
     private GridManager grid;
     public int x, y;

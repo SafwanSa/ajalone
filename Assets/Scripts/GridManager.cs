@@ -105,7 +105,9 @@ public class GridManager : MonoBehaviour
         {
             // Select a tile
             this.selectedTile = tile;
+            this.selectedTile.highlight.SetActive(false);
             this.selectedTile.selected.SetActive(true);
+            this.selectedTile.highlight.SetActive(true);
         }
         else if (this.selectedTile != null && tile.value == 0)
         {
