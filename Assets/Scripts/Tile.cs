@@ -32,7 +32,7 @@ public class Tile : MonoBehaviour
     {
 
         if (this.value == 0)
-            this._renderer.color = Color.grey;
+            this._renderer.color = Color.clear;
         else if (this.value == 1)
             this._renderer.color = Color.white;
         else
