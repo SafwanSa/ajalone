@@ -79,6 +79,11 @@ public class GridManager : MonoBehaviour
         this.cam.position = new Vector3(center.x, center.y, -10f);
     }
 
+    private void TogglePlayerTurn()
+    {
+        this.player = this.player == 1 ? 2 : 1;
+    }
+
     public void SelectTile(Tile tile)
     {
         if (tile.value == this.player && this.selectedTile == null)
@@ -95,11 +100,14 @@ public class GridManager : MonoBehaviour
                 // Move single tile
                 this.MoveTile(this.selectedTile, tile);
                 this.UnSelectTile();
+                this.TogglePlayerTurn();
             }
             else
             {
                 // Move multiple tiles
                 this.MoveMultipleTiles(tile);
+                this.UnSelectTile();
+                this.TogglePlayerTurn();
             }
         }
         else
@@ -168,14 +176,13 @@ public class GridManager : MonoBehaviour
     }
 
 
-    private List<Tile> GetInvolvedTiles(Tile newTile)
+    private void GetInvolvedTiles(Tile newTile, ref List<Tile> selectedTiles, ref List<int> directionalValues)
     {
         int maxX = Mathf.Max(newTile.x, selectedTile.x);
         int maxY = Mathf.Max(newTile.y, selectedTile.y);
         int minX = Mathf.Min(newTile.x, selectedTile.x);
         int minY = Mathf.Min(newTile.y, selectedTile.y);
-        List<Tile> selectedTiles = new List<Tile>();
-        // selectedTiles.Add(newTile);
+
         // Add all the effected tiles
         if (newTile.x == selectedTile.x)
         {
@@ -199,6 +206,15 @@ public class GridManager : MonoBehaviour
                 // print($"start={start}");
                 condition = dir > 0 ? (start >= stop) : (start <= stop); // start >= stop
             }
+            int y = newTile.y;
+            while (y >= 1 && y <= 9)
+            {
+                Tile t = this.GetTile(new Vector2(y, newTile.x));
+                if (t == null) break;
+                directionalValues.Add(t.value);
+                print($"x={newTile.x}   y={y}       value={t.value}");
+                y += dir;
+            }
         }
         else if (newTile.y == selectedTile.y)
         {
@@ -216,7 +232,15 @@ public class GridManager : MonoBehaviour
                 start += (dir * -1);
                 condition = dir > 0 ? (start >= stop) : (start <= stop); // start <= stop
             }
-
+            int x = newTile.x;
+            while (x >= 1 && x <= 9)
+            {
+                Tile t = this.GetTile(new Vector2(x, newTile.y));
+                if (t == null) break;
+                directionalValues.Add(t.value);
+                print($"x={x}   y={newTile.y}       value={t.value}");
+                x += dir;
+            }
         }
         else if (newTile.x - selectedTile.x == newTile.y - selectedTile.y)
         {
@@ -235,18 +259,31 @@ public class GridManager : MonoBehaviour
                 y += (dir * -1);
                 condition = dir > 0 ? (x >= selectedTile.x && y >= selectedTile.y) : (x <= selectedTile.x && y <= selectedTile.y);
             }
-
+            x = newTile.x;
+            y = newTile.y;
+            while (y >= 1 && y <= 9 && x >= 1 && x <= 9)
+            {
+                Tile t = this.GetTile(new Vector2(y, x));
+                if (t == null) break;
+                directionalValues.Add(t.value);
+                print($"x={x}   y={y}       value={t.value}");
+                y += dir;
+                x += dir;
+            }
         }
         else
         {
             // Sideways
         }
-        return selectedTiles;
+        // return selectedTiles;
     }
 
     private void MoveMultipleTiles(Tile newTile)
     {
-        List<Tile> selectedTiles = this.GetInvolvedTiles(newTile);
+        List<Tile> selectedTiles = new List<Tile>();
+        List<int> directionalValues = new List<int>();
+        this.GetInvolvedTiles(newTile, ref selectedTiles, ref directionalValues);
+
         if (newTile.value == 0)
         {
             // Empty tile. Alow movement
@@ -254,21 +291,35 @@ public class GridManager : MonoBehaviour
             {
                 this.MoveTile(selectedTiles[i + 1], selectedTiles[i]);
             }
-            this.UnSelectTile();
         }
         else if (newTile.value != this.player)
         {
             // Look forward. Either allow, then move all, or prevent
-            // Get the selectedTile[0]
-            // Search from selectedTile[0] to the same dir of movements
             // ! if found value=0 at selectedTile[0] + 1, move right away
-            // if selectedTile[0] + 1 value != player, count forward until found null or value=0
-            // IF count < selectedTiles.Count - 1, move them
+            // Calculate all enemies tiles ahead of movement dir
+            int counter = 0;
+            bool foundFriendlyTile = false;
+            for (int i = 0; i < directionalValues.Count; i++)
+            {
+                if (directionalValues[i] == 0) break;
+                else if (directionalValues[i] != this.player) counter++;
+                else { foundFriendlyTile = true; break; }
+            }
+            print($"{counter} enemies ahead");
+            // If counter < selectedTiles.Count - 1 and no friendly tiles ahead, move them
+            if (counter < selectedTiles.Count - 1 && !foundFriendlyTile)
+            {
+                for (int i = 0; i < selectedTiles.Count - 1; i++)
+                {
+                    this.MoveTile(selectedTiles[i + 1], selectedTiles[i]);
+                }
+            }
+
         }
     }
 
-    private int CalculateEnemyTiles()
-    {
-
-    }
+    // private int CalculateEnemyTiles()
+    // {
+    //     return 0;
+    // }
 }
