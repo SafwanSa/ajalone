@@ -8,13 +8,13 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int width, height;
     [SerializeField] private Tile tilePrefab;
     [SerializeField] private Transform cam;
-    private Dictionary<Vector2, Tile> tiles;
+    [SerializeField] private Dictionary<Vector2, Tile> tiles;
     public int player;
     private Tile selectedTile;
 
     private void Start()
     {
-        this.player = 2;
+        this.player = 1;
         GenerateGrid();
     }
 
@@ -73,7 +73,7 @@ public class GridManager : MonoBehaviour
                 if (xOffSet == 2.5f && y == 5)
                     center = spawnedTile.transform.position;
 
-                this.tiles[new Vector2(x, y)] = spawnedTile;
+                this.tiles[new Vector2(y, x)] = spawnedTile;
             }
         }
         this.cam.position = new Vector3(center.x, center.y, -10f);
@@ -83,18 +83,40 @@ public class GridManager : MonoBehaviour
     {
         if (tile.value == this.player && this.selectedTile == null)
         {
+            // Select a tile
             this.selectedTile = tile;
             this.selectedTile.selected.SetActive(true);
         }
-        else if (tile.value != this.player && this.AllowedPos(tile))
+        else if (tile.value != this.player)
         {
-            // Move
-            this.Move(tile);
+            if (this.AllowedPos(tile))
+            {
+                // TODO: Check tiles forward to allow movement
+                // Move single tile
+                this.MoveTile(this.selectedTile, tile);
+                this.UnSelectTile();
+            }
+            else
+            {
+                // Move multiple tiles
+                this.MoveMultipleTiles(tile);
+            }
         }
         else
         {
+            // Move more than one tiles
+            // Detect how many ones in between. If valid, move them
+
 
         }
+    }
+
+    public void MoveTile(Tile tile, Tile nextTile)
+    {
+        nextTile.value = tile.value;
+        nextTile.UpdateColor();
+        tile.value = 0;
+        tile.UpdateColor();
     }
 
     public void UnSelectTile()
@@ -133,13 +155,120 @@ public class GridManager : MonoBehaviour
         return false;
     }
 
-    private void Move(Tile tile)
+    public Tile GetTile(Vector2 pos)
     {
-        var tempVal = tile.value;
-        tile.value = this.selectedTile.value;
-        this.selectedTile.value = tempVal;
-        this.selectedTile.UpdateColor();
-        tile.UpdateColor();
-        this.UnSelectTile();
+        if (this.tiles.TryGetValue(pos, out var tile))
+        {
+            return tile;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+
+    private List<Tile> GetInvolvedTiles(Tile newTile)
+    {
+        int maxX = Mathf.Max(newTile.x, selectedTile.x);
+        int maxY = Mathf.Max(newTile.y, selectedTile.y);
+        int minX = Mathf.Min(newTile.x, selectedTile.x);
+        int minY = Mathf.Min(newTile.y, selectedTile.y);
+        List<Tile> selectedTiles = new List<Tile>();
+        // selectedTiles.Add(newTile);
+        // Add all the effected tiles
+        if (newTile.x == selectedTile.x)
+        {
+            // Left-dig
+            print("Left dig");
+            // Loop through the tiles between [newTile, selectedTile]
+            int dir = (newTile.y - selectedTile.y);
+            dir = dir < 0 ? -1 : 1;
+            int start = dir > 0 ? maxY : minY;
+            int stop = dir > 0 ? minY : maxY;
+            bool condition = dir > 0 ? (start >= stop) : (start <= stop); // start >= stop
+            while (condition)
+            {
+                // print($"x={newTile.x}, y={start}");
+                // print($"dir={dir}");
+                // print($"start={start}");
+                // print($"stop={stop}");
+                // print($"condition={condition}");
+                selectedTiles.Add(this.GetTile(new Vector2(start, newTile.x)));
+                start += (dir * -1);
+                // print($"start={start}");
+                condition = dir > 0 ? (start >= stop) : (start <= stop); // start >= stop
+            }
+        }
+        else if (newTile.y == selectedTile.y)
+        {
+            // Left-Right
+            print("Left-Right");
+            // Loop through the tiles between [newTile, selectedTile]
+            int dir = (newTile.x - selectedTile.x);
+            dir = dir < 0 ? -1 : 1;
+            int start = dir > 0 ? maxX : minX;
+            int stop = dir > 0 ? minX : maxX;
+            bool condition = dir > 0 ? (start >= stop) : (start <= stop); // start <= stop
+            while (condition)
+            {
+                selectedTiles.Add(this.GetTile(new Vector2(newTile.y, start)));
+                start += (dir * -1);
+                condition = dir > 0 ? (start >= stop) : (start <= stop); // start <= stop
+            }
+
+        }
+        else if (newTile.x - selectedTile.x == newTile.y - selectedTile.y)
+        {
+            // Right-dig
+            print("Right dig");
+            // Loop through the tiles between [newTile, selectedTile]
+            int dir = (newTile.x - selectedTile.x);
+            dir = dir < 0 ? -1 : 1;
+            int x = newTile.x;
+            int y = newTile.y;
+            bool condition = dir > 0 ? (x >= selectedTile.x && y >= selectedTile.y) : (x <= selectedTile.x && y <= selectedTile.y);
+            while (condition)
+            {
+                selectedTiles.Add(this.GetTile(new Vector2(y, x)));
+                x += (dir * -1);
+                y += (dir * -1);
+                condition = dir > 0 ? (x >= selectedTile.x && y >= selectedTile.y) : (x <= selectedTile.x && y <= selectedTile.y);
+            }
+
+        }
+        else
+        {
+            // Sideways
+        }
+        return selectedTiles;
+    }
+
+    private void MoveMultipleTiles(Tile newTile)
+    {
+        List<Tile> selectedTiles = this.GetInvolvedTiles(newTile);
+        if (newTile.value == 0)
+        {
+            // Empty tile. Alow movement
+            for (int i = 0; i < selectedTiles.Count - 1; i++)
+            {
+                this.MoveTile(selectedTiles[i + 1], selectedTiles[i]);
+            }
+            this.UnSelectTile();
+        }
+        else if (newTile.value != this.player)
+        {
+            // Look forward. Either allow, then move all, or prevent
+            // Get the selectedTile[0]
+            // Search from selectedTile[0] to the same dir of movements
+            // ! if found value=0 at selectedTile[0] + 1, move right away
+            // if selectedTile[0] + 1 value != player, count forward until found null or value=0
+            // IF count < selectedTiles.Count - 1, move them
+        }
+    }
+
+    private int CalculateEnemyTiles()
+    {
+
     }
 }
