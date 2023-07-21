@@ -92,12 +92,13 @@ public class GridManager : MonoBehaviour
             this.selectedTile = tile;
             this.selectedTile.selected.SetActive(true);
         }
-        else if (tile.value != this.player)
+        else if (tile.value == 0)
         {
+            // Move a tile
             if (this.AllowedPos(tile))
             {
-                // TODO: Check tiles forward to allow movement
                 // Move single tile
+                print("Move single");
                 this.MoveTile(this.selectedTile, tile);
                 this.UnSelectTile();
                 this.TogglePlayerTurn();
@@ -105,9 +106,8 @@ public class GridManager : MonoBehaviour
             else
             {
                 // Move multiple tiles
+                print("Move multiple");
                 this.MoveMultipleTiles(tile);
-                this.UnSelectTile();
-                this.TogglePlayerTurn();
             }
         }
         else
@@ -206,13 +206,13 @@ public class GridManager : MonoBehaviour
                 // print($"start={start}");
                 condition = dir > 0 ? (start >= stop) : (start <= stop); // start >= stop
             }
-            int y = newTile.y;
+            int y = selectedTile.y;
             while (y >= 1 && y <= 9)
             {
-                Tile t = this.GetTile(new Vector2(y, newTile.x));
+                Tile t = this.GetTile(new Vector2(y, selectedTile.x));
                 if (t == null) break;
                 directionalValues.Add(t.value);
-                print($"x={newTile.x}   y={y}       value={t.value}");
+                // print($"x={selectedTile.x}   y={y}       value={t.value}");
                 y += dir;
             }
         }
@@ -232,13 +232,13 @@ public class GridManager : MonoBehaviour
                 start += (dir * -1);
                 condition = dir > 0 ? (start >= stop) : (start <= stop); // start <= stop
             }
-            int x = newTile.x;
+            int x = selectedTile.x;
             while (x >= 1 && x <= 9)
             {
-                Tile t = this.GetTile(new Vector2(x, newTile.y));
+                Tile t = this.GetTile(new Vector2(x, selectedTile.y));
                 if (t == null) break;
                 directionalValues.Add(t.value);
-                print($"x={x}   y={newTile.y}       value={t.value}");
+                // print($"x={x}   y={selectedTile.y}       value={t.value}");
                 x += dir;
             }
         }
@@ -259,14 +259,14 @@ public class GridManager : MonoBehaviour
                 y += (dir * -1);
                 condition = dir > 0 ? (x >= selectedTile.x && y >= selectedTile.y) : (x <= selectedTile.x && y <= selectedTile.y);
             }
-            x = newTile.x;
-            y = newTile.y;
+            x = selectedTile.x;
+            y = selectedTile.y;
             while (y >= 1 && y <= 9 && x >= 1 && x <= 9)
             {
                 Tile t = this.GetTile(new Vector2(y, x));
                 if (t == null) break;
                 directionalValues.Add(t.value);
-                print($"x={x}   y={y}       value={t.value}");
+                // print($"x={x}   y={y}       value={t.value}");
                 y += dir;
                 x += dir;
             }
@@ -281,41 +281,56 @@ public class GridManager : MonoBehaviour
     private void MoveMultipleTiles(Tile newTile)
     {
         List<Tile> selectedTiles = new List<Tile>();
-        List<int> directionalValues = new List<int>();
+        List<int> directionalValues = new List<int>(); // All values [selectedTile, last bounded tile]
         this.GetInvolvedTiles(newTile, ref selectedTiles, ref directionalValues);
 
-        if (newTile.value == 0)
+
+        // Look forward. Either allow, then move all, or prevent
+        // ! if found value=0 at selectedTile[0] + 1, move right away
+        // Calculate all enemies tiles ahead of movement dir
+        int enemyCounter = 0;
+        int friendlyCounter = 0;
+        bool friendlyOnTheWay = false;
+        bool startCountingEnemy = false;
+        bool startCountingFriendly = false;
+        foreach (int var in directionalValues)
         {
-            // Empty tile. Alow movement
+            print(var);
+        }
+        for (int i = 0; i < directionalValues.Count; i++)
+        {
+            if (directionalValues[i] == 0) break;
+            else if (directionalValues[i] != this.player)
+            {
+                if (!startCountingEnemy) startCountingEnemy = true;
+                enemyCounter++;
+            }
+            else
+            {
+                if (!startCountingFriendly) startCountingFriendly = true;
+                if (startCountingEnemy)
+                {
+                    friendlyOnTheWay = true;
+                    break;
+                }
+                friendlyCounter++;
+            }
+        }
+        print($"{enemyCounter} enemy");
+        print($"{friendlyCounter} friend");
+        print($"is friend on way? {friendlyOnTheWay}");
+        // If counter < selectedTiles.Count - 1 and no friendly tiles ahead, move them
+        if (enemyCounter < friendlyCounter && !friendlyOnTheWay)
+        {
             for (int i = 0; i < selectedTiles.Count - 1; i++)
             {
                 this.MoveTile(selectedTiles[i + 1], selectedTiles[i]);
             }
+            this.UnSelectTile();
+            this.TogglePlayerTurn();
         }
-        else if (newTile.value != this.player)
-        {
-            // Look forward. Either allow, then move all, or prevent
-            // ! if found value=0 at selectedTile[0] + 1, move right away
-            // Calculate all enemies tiles ahead of movement dir
-            int counter = 0;
-            bool foundFriendlyTile = false;
-            for (int i = 0; i < directionalValues.Count; i++)
-            {
-                if (directionalValues[i] == 0) break;
-                else if (directionalValues[i] != this.player) counter++;
-                else { foundFriendlyTile = true; break; }
-            }
-            print($"{counter} enemies ahead");
-            // If counter < selectedTiles.Count - 1 and no friendly tiles ahead, move them
-            if (counter < selectedTiles.Count - 1 && !foundFriendlyTile)
-            {
-                for (int i = 0; i < selectedTiles.Count - 1; i++)
-                {
-                    this.MoveTile(selectedTiles[i + 1], selectedTiles[i]);
-                }
-            }
 
-        }
+
     }
 
     // private int CalculateEnemyTiles()
