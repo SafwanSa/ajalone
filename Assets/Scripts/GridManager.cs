@@ -11,11 +11,14 @@ public class GridManager : MonoBehaviour
     [SerializeField] private Dictionary<Vector2, Tile> tiles;
     public int player;
     private Tile selectedTile;
+    [SerializeField] private int white;
+    [SerializeField] private int black;
 
     private void Start()
     {
         this.player = 1;
         GenerateGrid();
+        CalculateTiles();
     }
 
     private int GetNumOfBallsInRow(int row)
@@ -79,6 +82,18 @@ public class GridManager : MonoBehaviour
         this.cam.position = new Vector3(center.x, center.y, -10f);
     }
 
+    private void CalculateTiles()
+    {
+        // Tile[] _tiles = this.tiles.Values.ToArray();
+        this.white = 0;
+        this.black = 0;
+        foreach (KeyValuePair<Vector2, Tile> pair in this.tiles)
+        {
+            if (pair.Value.value == 1) this.white++;
+            if (pair.Value.value == 2) this.black++;
+        }
+    }
+
     private void TogglePlayerTurn()
     {
         this.player = this.player == 1 ? 2 : 1;
@@ -86,15 +101,15 @@ public class GridManager : MonoBehaviour
 
     public void SelectTile(Tile tile)
     {
-        if (tile.value == this.player && this.selectedTile == null)
+        if (this.selectedTile == null && tile.value == this.player)
         {
             // Select a tile
             this.selectedTile = tile;
             this.selectedTile.selected.SetActive(true);
         }
-        else if (tile.value == 0)
+        else if (this.selectedTile != null && tile.value == 0)
         {
-            // Move a tile
+            // Move a tile not in boundaries
             if (this.AllowedPos(tile))
             {
                 // Move single tile
@@ -110,12 +125,23 @@ public class GridManager : MonoBehaviour
                 this.MoveMultipleTiles(tile);
             }
         }
-        else
+        else if (this.selectedTile != null && tile.value != this.player)
         {
-            // Move more than one tiles
-            // Detect how many ones in between. If valid, move them
-
-
+            // Move a tile in boundaries
+            int[] c = { 1, -1 };
+            foreach (int i in c)
+            {
+                if (this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
+                 this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
+                 this.GetTile(new Vector2(tile.y + i, tile.x)) == null ||
+                 this.GetTile(new Vector2(tile.y + i, tile.x)) == null)
+                {
+                    print("Move multiple to die");
+                    this.MoveMultipleTiles(tile);
+                    break;
+                }
+            }
+            this.CalculateTiles();
         }
     }
 
@@ -281,7 +307,7 @@ public class GridManager : MonoBehaviour
     private void MoveMultipleTiles(Tile newTile)
     {
         List<Tile> selectedTiles = new List<Tile>();
-        List<int> directionalValues = new List<int>(); // All values [selectedTile, last bounded tile]
+        List<int> directionalValues = new List<int>(); // All values in the dir of the move [selectedTile, last bounded tile]
         this.GetInvolvedTiles(newTile, ref selectedTiles, ref directionalValues);
 
 
