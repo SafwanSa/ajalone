@@ -1,6 +1,11 @@
 [] Board UI
-[] Make the game online
-[] Create game
-[] Join game
+    [] Logo at the top
+    [] Winning UI
+    [] Loosing UI
+    [] Turn indicator
+[*] Make the game online
+[*] Create game
+[*] Join game
+[] Win/Lose
 [] Exit game
-[] Destroy room scene
+    [] If anyone left, leave all

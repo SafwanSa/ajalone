@@ -27,7 +27,14 @@ public class GridManager : MonoBehaviourPun
     {
         this.isRoomCreated = GameObject.FindObjectOfType<RoomManagement>().isRoomCreated;
         this.player = 1;
-        if (this.isRoomCreated) this.cam.transform.rotation *= Quaternion.Euler(0, 0, 180);
+        if (!this.isRoomCreated)
+        {
+            this.cam.transform.rotation *= Quaternion.Euler(0, 0, 180);
+            this.player1Text.transform.rotation *= Quaternion.Euler(0, 0, 180);
+            this.player2Text.transform.rotation *= Quaternion.Euler(0, 0, 180);
+            this.player1Text.alignment = TextAnchor.MiddleRight;
+            this.player2Text.alignment = TextAnchor.MiddleRight;
+        }
         StartCoroutine(LateStartCo(1f));
         OnPlayerJoin();
     }
@@ -222,7 +229,7 @@ public class GridManager : MonoBehaviourPun
 
     public void SelectTile(Tile tile)
     {
-        if (this.player == PhotonNetwork.LocalPlayer.ActorNumber)
+        if (this.playersCount > 1 && this.player == PhotonNetwork.LocalPlayer.ActorNumber)
         {
             if (this.selectedTile == null && tile.value == this.player)
             {
