@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 public class GridManager : MonoBehaviourPun
 {
     [SerializeField] private int width, height;
@@ -92,9 +93,10 @@ public class GridManager : MonoBehaviourPun
         this.photonView.RPC("RPCCheckWinner", RpcTarget.All);
     }
 
-    private void OnExit()
+    public void OnExit()
     {
-
+        PhotonNetwork.LeaveRoom();
+        SceneManager.LoadScene("LobbyScene");
     }
 
     public void OnPlayerJoin()

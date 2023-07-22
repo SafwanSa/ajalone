@@ -8,5 +8,5 @@
 [*] Create game
 [*] Join game
 [*] Win/Lose
-[] Exit game
+[*] Exit game
     [] If anyone left, leave all

@@ -55,6 +55,12 @@ public class RoomManagement : MonoBehaviourPunCallbacks
         Destroy(this);
     }
 
+    public void OnQuit()
+    {
+        Debug.Log("Game is exiting");
+        Application.Quit();
+    }
+
     public static string GenerateRandomAlphaNumericStr(int desiredLength)
     {
         System.Text.StringBuilder codeSB = new System.Text.StringBuilder(""); // Requires @ top: using System.Text;
