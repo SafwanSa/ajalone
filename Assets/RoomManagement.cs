@@ -10,7 +10,6 @@ using Photon.Realtime;
 public class RoomManagement : MonoBehaviourPunCallbacks
 {
     // Start is called before the first frame update
-    public TMP_InputField createInput;
     public TMP_InputField joinInput;
     public TMP_Text errorMsg;
     public string roomName;
@@ -22,14 +21,15 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     }
     public void CreateRoom()
     {
-        this.roomName = this.createInput.text;
+
+        this.roomName = GenerateRandomAlphaNumericStr(4).ToLower();
         this.isRoomCreated = true;
-        PhotonNetwork.CreateRoom(this.createInput.text);
+        PhotonNetwork.CreateRoom(this.roomName);
     }
 
     public void JoinRoom()
     {
-        this.roomName = this.joinInput.text;
+        this.roomName = this.joinInput.text.ToLower();
         this.isRoomCreated = false;
         PhotonNetwork.JoinRoom(this.joinInput.text);
     }
@@ -54,4 +54,22 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     {
         Destroy(this);
     }
+
+    public static string GenerateRandomAlphaNumericStr(int desiredLength)
+    {
+        System.Text.StringBuilder codeSB = new System.Text.StringBuilder(""); // Requires @ top: using System.Text;
+        char[] chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
+        char singleChar;
+
+        while (codeSB.Length < desiredLength)
+        {
+            singleChar = chars[UnityEngine.Random.Range(0, chars.Length)];
+            codeSB.Append(singleChar);
+        }
+
+        Debug.Log("GenerateRandomAlphaNumericStr: " + codeSB.ToString());
+
+        return codeSB.ToString();
+    }
 }
+

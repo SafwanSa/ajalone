@@ -20,6 +20,7 @@ public class GridManager : MonoBehaviourPun
     private Tile selectedTile;
     public bool isRoomCreated;
     public int playersCount;
+    public Text roomName;
     public GameObject player1Turn;
     public GameObject player2Turn;
     public Text winnerText;
@@ -32,6 +33,7 @@ public class GridManager : MonoBehaviourPun
     private void Start()
     {
         this.isRoomCreated = GameObject.FindObjectOfType<RoomManagement>().isRoomCreated;
+        this.roomName.text = $"#Room: {GameObject.FindObjectOfType<RoomManagement>().roomName.ToUpper()}";
         this.player = 1;
         if (!this.isRoomCreated)
         {
@@ -110,7 +112,7 @@ public class GridManager : MonoBehaviourPun
         }
         else
         {
-            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: NAN";
+            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Waiting";
         }
     }
 
