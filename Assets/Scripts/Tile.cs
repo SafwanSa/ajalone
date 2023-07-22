@@ -8,6 +8,9 @@ public class Tile : MonoBehaviour
     public GameObject highlight;
     public GameObject selected;
     private GridManager grid;
+    [SerializeField] Material black;
+    [SerializeField] Material white;
+    [SerializeField] Material gray;
     public int x, y;
     public int value = 0;
 
@@ -32,11 +35,20 @@ public class Tile : MonoBehaviour
     {
 
         if (this.value == 0)
-            this._renderer.color = Color.clear;
+            this.highlight.SetActive(false);
+        // this._renderer.color = Color.clear;
         else if (this.value == 1)
-            this._renderer.color = Color.white;
+        {
+            this.highlight.SetActive(true);
+            this.highlight.GetComponent<MeshRenderer>().material = this.white;
+        }
+        // this._renderer.color = Color.white;
         else
-            this._renderer.color = Color.black;
+        {
+            this.highlight.SetActive(true);
+            this.highlight.GetComponent<MeshRenderer>().material = this.black;
+        }
+        // this._renderer.color = Color.black;
 
     }
 
