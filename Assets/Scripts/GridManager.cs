@@ -38,14 +38,22 @@ public class GridManager : MonoBehaviourPun
         this.player = 1;
         if (!this.isRoomCreated)
         {
-            this.cam.transform.rotation *= Quaternion.Euler(0, 0, 180);
-            this.player1Turn.transform.GetChild(0).transform.rotation *= Quaternion.Euler(0, 0, 180);
-            this.player1Turn.transform.GetChild(0).GetComponent<Text>().alignment = TextAnchor.MiddleRight;
-            this.player2Turn.transform.GetChild(0).transform.rotation *= Quaternion.Euler(0, 0, 180);
-            this.player2Turn.transform.GetChild(0).GetComponent<Text>().alignment = TextAnchor.MiddleRight;
+            this.RotateCamera();
         }
         StartCoroutine(LateStartCo(1f));
         OnPlayerJoin();
+    }
+
+    private void RotateCamera()
+    {
+        this.cam.transform.rotation *= Quaternion.Euler(0, 0, 180);
+        this.player1Turn.transform.GetChild(0).transform.rotation *= Quaternion.Euler(180, 0, 0);
+        this.player1Turn.transform.GetChild(0).GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
+        this.player2Turn.transform.GetChild(0).transform.rotation *= Quaternion.Euler(180, 0, 0);
+        this.player2Turn.transform.GetChild(0).GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
+        this.detailsContainer.transform.rotation *= Quaternion.Euler(180, 0, 180);
+        this.resultLayout.transform.rotation *= Quaternion.Euler(0, 0, 180);
+        this.backgroundsContainer.transform.rotation *= Quaternion.Euler(0, 0, 180);
     }
 
     [PunRPC]
@@ -71,7 +79,6 @@ public class GridManager : MonoBehaviourPun
             this.rowsContainer.SetActive(false);
             this.detailsContainer.SetActive(false);
             this.outsContainer.SetActive(false);
-            if (!this.isRoomCreated) this.resultLayout.transform.rotation *= Quaternion.Euler(0, 0, 180);
             for (int i = 0; i < this.rows.Count; i++)
             {
                 this.rows[i].SetActive(false);
