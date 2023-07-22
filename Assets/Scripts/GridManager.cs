@@ -8,16 +8,16 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int width, height;
     [SerializeField] private Tile tilePrefab;
     [SerializeField] private Transform cam;
-    [SerializeField] private Dictionary<Vector2, Tile> tiles;
-    public int player;
-    private Tile selectedTile;
-    [SerializeField] private int white;
-    [SerializeField] private int black;
     [SerializeField] private List<GameObject> rows;
+    [SerializeField] private Dictionary<Vector2, Tile> tiles;
     [SerializeField] private GameObject blackOuts;
     [SerializeField] private GameObject whiteOuts;
     private List<int> blackOutsIndicesFilled = new List<int>();
     private List<int> whiteOutsIndicesFilled = new List<int>();
+    [SerializeField] private int white;
+    [SerializeField] private int black;
+    public int player;
+    private Tile selectedTile;
 
     private void Start()
     {
@@ -105,44 +105,6 @@ public class GridManager : MonoBehaviour
             default:
                 return -1;
         }
-    }
-
-    private void CreateGrid()
-    {
-        this.tiles = new Dictionary<Vector2, Tile>();
-        var centerNumOfTiles = 9;
-        Vector3 center = Vector3.zero;
-        // Rows
-        for (int y = 1; y <= 9; y++)
-        {
-            int numOfBalls = this.GetNumOfBallsInRow(y);
-            int x = 0;
-            if (y <= 5)
-                x = 1;
-            else
-            {
-
-                x = 5 - (9 - y);
-                numOfBalls += (x - 1);
-            }
-            // Cols
-            for (; x <= numOfBalls; x++)
-            {
-                var spawnedTile = Instantiate(this.tilePrefab, new Vector3(x, y), Quaternion.identity);
-                var radius = (float)spawnedTile.GetComponent<CircleCollider2D>().radius;
-                var xOffSet = x - (radius * y);
-                spawnedTile.transform.position = new Vector3(xOffSet * 1.05f, y * 1.05f);
-                spawnedTile.name = $"Tile {y} {x}";
-                spawnedTile.Init(x, y, this);
-
-                // Save center tile pos
-                if (xOffSet == 2.5f && y == 5)
-                    center = spawnedTile.transform.position;
-
-                this.tiles[new Vector2(y, x)] = spawnedTile;
-            }
-        }
-        this.cam.position = new Vector3(center.x, center.y, -30f);
     }
 
     private void CalculateTiles()
@@ -238,11 +200,6 @@ public class GridManager : MonoBehaviour
         return this.selectedTile == tile;
     }
 
-    public bool OnSelection()
-    {
-        return this.selectedTile != null;
-    }
-
     public bool AllowedPos(Tile tile)
     {
         bool otherTile = this.selectedTile && this.selectedTile.value != tile.value;
@@ -271,7 +228,6 @@ public class GridManager : MonoBehaviour
             return null;
         }
     }
-
 
     private void GetInvolvedTiles(Tile newTile, ref List<Tile> selectedTiles, ref List<int> directionalValues)
     {
@@ -430,8 +386,4 @@ public class GridManager : MonoBehaviour
 
     }
 
-    // private int CalculateEnemyTiles()
-    // {
-    //     return 0;
-    // }
 }
