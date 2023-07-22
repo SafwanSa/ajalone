@@ -30,18 +30,25 @@ public class GridManager : MonoBehaviourPun
     public GameObject rowsContainer;
     public GameObject detailsContainer;
     public GameObject outsContainer;
-
+    public List<GameObject> spawnedTiles = new List<GameObject>();
     private void Start()
     {
-        this.isRoomCreated = GameObject.FindObjectOfType<RoomManagement>().isRoomCreated;
-        this.roomName.text = $"#Room: {GameObject.FindObjectOfType<RoomManagement>().roomName.ToUpper()}";
+        this.roomName.text = $"#Room: {PlayerPrefs.GetString("roomName").ToUpper()}";
+        this.isRoomCreated = PlayerPrefs.GetInt("isRoomCreated") == 1 ? true : false;
         this.player = 1;
         if (!this.isRoomCreated)
         {
+            print("Soft Start");
             this.RotateCamera();
+            StartCoroutine(LateStartCo(2f));
         }
-        StartCoroutine(LateStartCo(1f));
-        OnPlayerJoin();
+        else
+        {
+            print("Start");
+            GenerateGrid();
+            this.CalculateTiles();
+            this.OnPlayerJoin();
+        }
     }
 
     private void RotateCamera()
@@ -103,7 +110,8 @@ public class GridManager : MonoBehaviourPun
     public void OnExit()
     {
         PhotonNetwork.LeaveRoom();
-        SceneManager.LoadScene("LobbyScene");
+        // SceneManager.LoadScene("LobbyScene");
+        PhotonNetwork.LoadLevel("LobbyScene");
     }
 
     public void OnPlayerJoin()
@@ -128,20 +136,9 @@ public class GridManager : MonoBehaviourPun
     IEnumerator LateStartCo(float waitTime)
     {
         yield return new WaitForSeconds(waitTime);
-        this.LateStart();
-    }
-
-    void LateStart()
-    {
-        if (this.isRoomCreated)
-        {
-            GenerateGrid();
-        }
-        else
-        {
-            SoftGenerateGrid();
-        }
-        CalculateTiles();
+        this.SoftGenerateGrid();
+        this.CalculateTiles();
+        this.OnPlayerJoin();
     }
 
     private void RemoveTile()
@@ -190,13 +187,18 @@ public class GridManager : MonoBehaviourPun
 
     private void SoftGenerateGrid()
     {
+        print("Soft gen");
         this.tiles = new Dictionary<Vector2, Tile>();
         Tile[] ts = GameObject.FindObjectsOfType<Tile>();
+        print(ts.Length);
         for (int i = 0; i < ts.Length; i++)
         {
-            object[] data = ts[i].gameObject.GetComponent<PhotonView>().InstantiationData;
-            ts[i].Init((int)data[2], (int)data[1], this);
-            this.tiles[new Vector2((int)data[1], (int)data[2])] = ts[i];
+            if (ts[i].gameObject.tag != "Dummy")
+            {
+                object[] data = ts[i].gameObject.GetComponent<PhotonView>().InstantiationData;
+                ts[i].Init((int)data[2], (int)data[1], this);
+                this.tiles[new Vector2((int)data[1], (int)data[2])] = ts[i];
+            }
         }
     }
 
@@ -231,6 +233,7 @@ public class GridManager : MonoBehaviourPun
                     0,
                     data
                 );
+                // this.spawnedTiles.Add(spawnedTile);
                 spawnedTile.name = spot.name;
                 spawnedTile.transform.parent = spot.transform;
                 RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
@@ -283,10 +286,13 @@ public class GridManager : MonoBehaviourPun
         // Tile[] _tiles = this.tiles.Values.ToArray();
         this.white = 0;
         this.black = 0;
-        foreach (KeyValuePair<Vector2, Tile> pair in this.tiles)
+        if (this.tiles.Count > 0)
         {
-            if (pair.Value.value == 1) this.white++;
-            if (pair.Value.value == 2) this.black++;
+            foreach (KeyValuePair<Vector2, Tile> pair in this.tiles)
+            {
+                if (pair.Value.value == 1) this.white++;
+                if (pair.Value.value == 2) this.black++;
+            }
         }
     }
 
@@ -589,4 +595,13 @@ public class GridManager : MonoBehaviourPun
 
     }
 
+
+
+    private void OnDestroy()
+    {
+        for (int i = 0; i < this.spawnedTiles.Count; i++)
+        {
+            // PhotonNetwork.Destroy(this.spawnedTiles[i]);
+        }
+    }
 }

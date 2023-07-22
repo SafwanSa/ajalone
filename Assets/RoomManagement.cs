@@ -15,10 +15,12 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     public string roomName;
     public bool isRoomCreated;
 
-    private void Awake()
+    void OnDisable()
     {
-        DontDestroyOnLoad(this);
+        PlayerPrefs.SetString("roomName", this.roomName);
+        PlayerPrefs.SetInt("isRoomCreated", this.isRoomCreated ? 1 : 0);
     }
+
     public void CreateRoom()
     {
 
@@ -31,7 +33,7 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     {
         this.roomName = this.joinInput.text.ToLower();
         this.isRoomCreated = false;
-        PhotonNetwork.JoinRoom(this.joinInput.text);
+        PhotonNetwork.JoinRoom(this.roomName);
     }
 
     public override void OnJoinedRoom()
@@ -50,10 +52,6 @@ public class RoomManagement : MonoBehaviourPunCallbacks
         errorMsg.text = message;
     }
 
-    public void DestroyScene()
-    {
-        Destroy(this);
-    }
 
     public void OnQuit()
     {
@@ -64,7 +62,7 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     public static string GenerateRandomAlphaNumericStr(int desiredLength)
     {
         System.Text.StringBuilder codeSB = new System.Text.StringBuilder(""); // Requires @ top: using System.Text;
-        char[] chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
+        char[] chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
         char singleChar;
 
         while (codeSB.Length < desiredLength)

@@ -5806,6 +5806,7 @@ MonoBehaviour:
   rowsContainer: {fileID: 426708193}
   detailsContainer: {fileID: 894256480}
   outsContainer: {fileID: 596053345}
+  spawnedTiles: []
 --- !u!4 &1151162665
 Transform:
   m_ObjectHideFlags: 0
@@ -7796,11 +7797,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: NewTile
       objectReference: {fileID: 0}
+    - target: {fileID: 2061764876714341244, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
+      propertyPath: m_TagString
+      value: Dummy
+      objectReference: {fileID: 0}
     - target: {fileID: 5863987785534415083, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
       propertyPath: sceneViewId
       value: 3
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5863987785534415083, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
 --- !u!4 &1705646867 stripped
 Transform:
@@ -9503,6 +9509,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: NewTile
       objectReference: {fileID: 0}
+    - target: {fileID: 2061764876714341244, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
+      propertyPath: m_TagString
+      value: Dummy
+      objectReference: {fileID: 0}
     - target: {fileID: 3052229668997605960, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -9519,7 +9529,8 @@ PrefabInstance:
       propertyPath: sceneViewId
       value: 2
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5863987785534415083, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
 --- !u!4 &2100885563 stripped
 Transform:
