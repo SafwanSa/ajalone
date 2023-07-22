@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
-public class GridManager : MonoBehaviour
+public class GridManager : MonoBehaviourPun
 {
     [SerializeField] private int width, height;
     [SerializeField] private Tile tilePrefab;
@@ -58,25 +58,39 @@ public class GridManager : MonoBehaviour
         {
             if (_temp.IndexOf(i) == -1)
             {
-                GameObject _out = this.player == 2 ? this.blackOuts.transform.GetChild(i).gameObject : this.whiteOuts.transform.GetChild(i).gameObject;
-                var spawnedTile = Instantiate(this.tilePrefab, new Vector3(_out.transform.position.x, _out.transform.position.y, _out.transform.position.z), Quaternion.identity);
-                spawnedTile.GetComponent<CircleCollider2D>().radius = 0f;
-                spawnedTile.transform.parent = _out.transform;
-                RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
-                trans.anchorMin = new Vector2(0f, 0f);
-                trans.anchorMax = new Vector2(1f, 1f);
-                trans.pivot = new Vector2(0.5f, 0.5f);
-                RectTransformExtensions.SetLeft(trans, 20);
-                RectTransformExtensions.SetTop(trans, 25);
-                RectTransformExtensions.SetRight(trans, 20);
-                RectTransformExtensions.SetBottom(trans, 25);
-                trans.localPosition = new Vector3(trans.localPosition.x, trans.localPosition.y, -1);
-                spawnedTile.Init(indx, indx, this);
-                if (this.player == 2) this.blackOutsIndicesFilled.Add(i);
-                else this.whiteOutsIndicesFilled.Add(i);
+                this.photonView.RPC("RPCRemoveTile", RpcTarget.All, i, indx);
                 break;
             }
         }
+    }
+
+    [PunRPC]
+    private void RPCRemoveTile(int i, int indx)
+    {
+        GameObject _out = this.player == 2 ? this.blackOuts.transform.GetChild(i).gameObject : this.whiteOuts.transform.GetChild(i).gameObject;
+        object[] data = { indx, indx, this.player };
+        var spawnedTile = PhotonNetwork.Instantiate(
+            this.tilePrefab.name,
+            new Vector3(_out.transform.position.x, _out.transform.position.y, _out.transform.position.z),
+            Quaternion.identity,
+            0,
+            data
+        );
+        spawnedTile.GetComponent<CircleCollider2D>().radius = 0f;
+        spawnedTile.transform.parent = _out.transform;
+        RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
+        trans.anchorMin = new Vector2(0f, 0f);
+        trans.anchorMax = new Vector2(1f, 1f);
+        trans.pivot = new Vector2(0.5f, 0.5f);
+        RectTransformExtensions.SetLeft(trans, 20);
+        RectTransformExtensions.SetTop(trans, 25);
+        RectTransformExtensions.SetRight(trans, 20);
+        RectTransformExtensions.SetBottom(trans, 25);
+        trans.localPosition = new Vector3(trans.localPosition.x, trans.localPosition.y, -1);
+        Tile t = spawnedTile.GetComponent<Tile>();
+        t.Init(indx, indx, this);
+        if (this.player == 2) this.blackOutsIndicesFilled.Add(i);
+        else this.whiteOutsIndicesFilled.Add(i);
     }
 
     private void SoftGenerateGrid()
@@ -177,6 +191,15 @@ public class GridManager : MonoBehaviour
 
     private void TogglePlayerTurn()
     {
+
+        this.photonView.RPC("RPCTogglePlayerTurn", RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void RPCTogglePlayerTurn()
+    {
+
+        Debug.Log("Toggle Player Turn");
         this.player = this.player == 1 ? 2 : 1;
     }
 
