@@ -107,13 +107,6 @@ public class GridManager : MonoBehaviourPun
         this.photonView.RPC("RPCCheckWinner", RpcTarget.All);
     }
 
-    public void OnExit()
-    {
-        PhotonNetwork.LeaveRoom();
-        // SceneManager.LoadScene("LobbyScene");
-        PhotonNetwork.LoadLevel("LobbyScene");
-    }
-
     public void OnPlayerJoin()
     {
         this.playersCount = PhotonNetwork.CurrentRoom.PlayerCount;

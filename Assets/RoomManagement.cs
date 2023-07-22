@@ -15,7 +15,7 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     public string roomName;
     public bool isRoomCreated;
 
-    void OnDisable()
+    void SavePrefs()
     {
         PlayerPrefs.SetString("roomName", this.roomName);
         PlayerPrefs.SetInt("isRoomCreated", this.isRoomCreated ? 1 : 0);
@@ -26,13 +26,25 @@ public class RoomManagement : MonoBehaviourPunCallbacks
 
         this.roomName = GenerateRandomAlphaNumericStr(4).ToLower();
         this.isRoomCreated = true;
+        this.SavePrefs();
         PhotonNetwork.CreateRoom(this.roomName);
+    }
+
+    public void OnExit()
+    {
+        PhotonNetwork.LeaveRoom();
+    }
+
+    public override void OnLeftRoom()
+    {
+        PhotonNetwork.LoadLevel("LobbyScene");
     }
 
     public void JoinRoom()
     {
         this.roomName = this.joinInput.text.ToLower();
         this.isRoomCreated = false;
+        this.SavePrefs();
         PhotonNetwork.JoinRoom(this.roomName);
     }
 
