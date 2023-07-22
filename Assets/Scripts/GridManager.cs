@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Photon.Pun;
 
 public class GridManager : MonoBehaviour
 {
@@ -67,7 +67,7 @@ public class GridManager : MonoBehaviour
                 string[] name = spot.name.Split(char.Parse(" "));
                 int y = int.Parse(name[1]);
                 int x = int.Parse(name[2]);
-                var spawnedTile = Instantiate(this.tilePrefab, new Vector3(spot.transform.position.x, spot.transform.position.y, spot.transform.position.z), Quaternion.identity);
+                var spawnedTile = PhotonNetwork.Instantiate(this.tilePrefab.name, new Vector3(spot.transform.position.x, spot.transform.position.y, spot.transform.position.z), Quaternion.identity);
                 spawnedTile.transform.parent = spot.transform;
                 RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
                 trans.anchorMin = new Vector2(0f, 0f);
@@ -78,8 +78,9 @@ public class GridManager : MonoBehaviour
                 RectTransformExtensions.SetRight(trans, 20);
                 RectTransformExtensions.SetBottom(trans, 25);
                 trans.localPosition = new Vector3(trans.localPosition.x, trans.localPosition.y, -1);
-                spawnedTile.Init(x, y, this);
-                this.tiles[new Vector2(y, x)] = spawnedTile;
+                Tile t = spawnedTile.GetComponent<Tile>();
+                t.Init(x, y, this);
+                this.tiles[new Vector2(y, x)] = t;
             }
         }
     }
