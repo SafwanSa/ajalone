@@ -18,12 +18,35 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int black;
     public int player;
     private Tile selectedTile;
+    public bool isRoomCreated;
 
     private void Start()
     {
+        this.isRoomCreated = GameObject.FindObjectOfType<RoomManagement>().isRoomCreated;
+        GameObject.FindObjectOfType<RoomManagement>().DestroyScene();
         this.player = 1;
-        GenerateGrid();
-        CalculateTiles();
+        StartCoroutine(LateStartCo(2f));
+    }
+
+
+    IEnumerator LateStartCo(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+        this.LateStart();
+    }
+
+    void LateStart()
+    {
+        if (this.isRoomCreated)
+        {
+            GenerateGrid();
+            CalculateTiles();
+        }
+        else
+        {
+            SoftGenerateGrid();
+            CalculateTiles();
+        }
     }
 
     private void RemoveTile()
@@ -56,6 +79,30 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    private void SoftGenerateGrid()
+    {
+        this.tiles = new Dictionary<Vector2, Tile>();
+        Tile[] ts = GameObject.FindObjectsOfType<Tile>();
+        for (int i = 0; i < ts.Length; i++)
+        {
+            object[] data = ts[i].gameObject.GetComponent<PhotonView>().InstantiationData;
+            ts[i].Init((int)data[2], (int)data[1], this);
+            this.tiles[new Vector2((int)data[1], (int)data[2])] = ts[i];
+        }
+    }
+
+    private int GetCorrectColor(int y, int x)
+    {
+        int value = 0;
+        if (y < 3 || (y == 3 && x > 2 && x < 6))
+            value = 1;
+        else if (y >= 8 || (y == 7 && x > 4 && x < 8))
+            value = 2;
+        else
+            value = 0;
+        return value;
+    }
+
     private void GenerateGrid()
     {
         this.tiles = new Dictionary<Vector2, Tile>();
@@ -67,7 +114,15 @@ public class GridManager : MonoBehaviour
                 string[] name = spot.name.Split(char.Parse(" "));
                 int y = int.Parse(name[1]);
                 int x = int.Parse(name[2]);
-                var spawnedTile = PhotonNetwork.Instantiate(this.tilePrefab.name, new Vector3(spot.transform.position.x, spot.transform.position.y, spot.transform.position.z), Quaternion.identity);
+                object[] data = { spot.name, y, x, this.GetCorrectColor(y, x) };
+                var spawnedTile = PhotonNetwork.Instantiate(
+                    this.tilePrefab.name,
+                    new Vector3(spot.transform.position.x, spot.transform.position.y, spot.transform.position.z),
+                    Quaternion.identity,
+                    0,
+                    data
+                );
+                spawnedTile.name = spot.name;
                 spawnedTile.transform.parent = spot.transform;
                 RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
                 trans.anchorMin = new Vector2(0f, 0f);

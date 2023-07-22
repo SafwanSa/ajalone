@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI.Extensions;
-public class Tile : MonoBehaviour
+using Photon.Pun;
+
+public class Tile : MonoBehaviourPun
 {
     [SerializeField] SpriteRenderer _renderer;
     public GameObject highlight;
@@ -13,6 +15,14 @@ public class Tile : MonoBehaviour
     [SerializeField] Material gray;
     public int x, y;
     public int value = 0;
+
+    /// <summary>
+    /// Awake is called when the script instance is being loaded.
+    /// </summary>
+    private void Awake()
+    {
+        print("Tile awaked");
+    }
 
     public void Init(int x, int y, GridManager grid)
     {
@@ -35,7 +45,9 @@ public class Tile : MonoBehaviour
     {
 
         if (this.value == 0)
+        {
             this.highlight.SetActive(false);
+        }
         // this._renderer.color = Color.clear;
         else if (this.value == 1)
         {
@@ -48,8 +60,35 @@ public class Tile : MonoBehaviour
             this.highlight.SetActive(true);
             this.highlight.GetComponent<MeshRenderer>().material = this.black;
         }
+        this.photonView.RPC("RPCUpdateColor", RpcTarget.All, this.x, this.y, this.value);
         // this._renderer.color = Color.black;
 
+    }
+
+    [PunRPC]
+    void RPCUpdateColor(int x, int y, int value)
+    {
+        Debug.Log($"RPC Update Color {x} {y} {value}");
+        if (this.x == x && this.y == y)
+        {
+            this.value = value;
+            if (this.value == 0)
+            {
+                this.highlight.SetActive(false);
+            }
+            // this._renderer.color = Color.clear;
+            else if (this.value == 1)
+            {
+                this.highlight.SetActive(true);
+                this.highlight.GetComponent<MeshRenderer>().material = this.white;
+            }
+            // this._renderer.color = Color.white;
+            else
+            {
+                this.highlight.SetActive(true);
+                this.highlight.GetComponent<MeshRenderer>().material = this.black;
+            }
+        }
     }
 
     // void OnMouseEnter()

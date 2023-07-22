@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.41686696, g: 0.44444373, b: 0.45997906, a: 1}
+  m_IndirectSpecularColor: {r: 0.416867, g: 0.4444438, b: 0.459979, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -4968,7 +4968,7 @@ GameObject:
   - component: {fileID: 1151162664}
   m_Layer: 0
   m_Name: GridManager
-  m_TagString: Untagged
+  m_TagString: GridManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5004,6 +5004,7 @@ MonoBehaviour:
   white: 0
   black: 0
   player: 0
+  isRoomCreated: 0
 --- !u!4 &1151162665
 Transform:
   m_ObjectHideFlags: 0

@@ -13,16 +13,23 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     public TMP_InputField joinInput;
     public TMP_Text errorMsg;
     public string roomName;
+    public bool isRoomCreated;
 
+    private void Awake()
+    {
+        DontDestroyOnLoad(this);
+    }
     public void CreateRoom()
     {
         this.roomName = this.createInput.text;
+        this.isRoomCreated = true;
         PhotonNetwork.CreateRoom(this.createInput.text);
     }
 
     public void JoinRoom()
     {
         this.roomName = this.joinInput.text;
+        this.isRoomCreated = false;
         PhotonNetwork.JoinRoom(this.joinInput.text);
     }
 
@@ -35,5 +42,10 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
         errorMsg.text = message;
+    }
+
+    public void DestroyScene()
+    {
+        Destroy(this);
     }
 }

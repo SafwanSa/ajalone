@@ -3,3 +3,4 @@
 [] Create game
 [] Join game
 [] Exit game
+[] Destroy room scene
