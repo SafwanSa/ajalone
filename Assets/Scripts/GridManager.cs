@@ -417,7 +417,7 @@ public class GridManager : MonoBehaviour
         print($"{friendlyCounter} friend");
         print($"is friend on way? {friendlyOnTheWay}");
         // If counter < selectedTiles.Count - 1 and no friendly tiles ahead, move them
-        if (enemyCounter < friendlyCounter && !friendlyOnTheWay)
+        if (enemyCounter < friendlyCounter && !friendlyOnTheWay && friendlyCounter <= 3)
         {
             for (int i = 0; i < selectedTiles.Count - 1; i++)
             {
