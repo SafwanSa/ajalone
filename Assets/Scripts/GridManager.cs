@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
-
+using UnityEngine.UI;
 public class GridManager : MonoBehaviourPun
 {
     [SerializeField] private int width, height;
@@ -19,15 +19,33 @@ public class GridManager : MonoBehaviourPun
     public int player;
     private Tile selectedTile;
     public bool isRoomCreated;
+    public int playersCount;
+    public Text player1Text;
+    public Text player2Text;
 
     private void Start()
     {
         this.isRoomCreated = GameObject.FindObjectOfType<RoomManagement>().isRoomCreated;
-        GameObject.FindObjectOfType<RoomManagement>().DestroyScene();
         this.player = 1;
+        if (this.isRoomCreated) this.cam.transform.rotation *= Quaternion.Euler(0, 0, 180);
         StartCoroutine(LateStartCo(1f));
+        OnPlayerJoin();
     }
 
+
+    public void OnPlayerJoin()
+    {
+        this.playersCount = PhotonNetwork.CurrentRoom.PlayerCount;
+        this.player1Text.text = $"Player 1: Playing";
+        if (this.playersCount > 1)
+        {
+            this.player2Text.text = $"Player 2: Playing";
+        }
+        else
+        {
+            this.player2Text.text = $"Player 2: NAN";
+        }
+    }
 
     IEnumerator LateStartCo(float waitTime)
     {
@@ -40,13 +58,12 @@ public class GridManager : MonoBehaviourPun
         if (this.isRoomCreated)
         {
             GenerateGrid();
-            CalculateTiles();
         }
         else
         {
             SoftGenerateGrid();
-            CalculateTiles();
         }
+        CalculateTiles();
     }
 
     private void RemoveTile()
@@ -205,54 +222,57 @@ public class GridManager : MonoBehaviourPun
 
     public void SelectTile(Tile tile)
     {
-        if (this.selectedTile == null && tile.value == this.player)
+        if (this.player == PhotonNetwork.LocalPlayer.ActorNumber)
         {
-            // Select a tile
-            this.selectedTile = tile;
-            this.selectedTile.highlight.SetActive(false);
-            this.selectedTile.selected.SetActive(true);
-            this.selectedTile.highlight.SetActive(true);
-        }
-        else if (this.selectedTile != null && tile.value == 0)
-        {
-            // Move a tile not in boundaries
-            if (this.AllowedPos(tile))
+            if (this.selectedTile == null && tile.value == this.player)
             {
-                // Move single tile
-                print("Move single");
-                this.MoveTile(this.selectedTile, tile);
-                this.UnSelectTile();
-                this.TogglePlayerTurn();
+                // Select a tile
+                this.selectedTile = tile;
+                this.selectedTile.highlight.SetActive(false);
+                this.selectedTile.selected.SetActive(true);
+                this.selectedTile.highlight.SetActive(true);
             }
-            else
+            else if (this.selectedTile != null && tile.value == 0)
             {
-                // Move multiple tiles
-                print("Move multiple");
-                this.MoveMultipleTiles(tile);
-            }
-        }
-        else if (this.selectedTile != null && tile.value != this.player)
-        {
-            // Move a tile in boundaries
-            int[] c = { 1, -1 };
-            bool removed = false;
-            foreach (int i in c)
-            {
-                if (this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
-                 this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
-                 this.GetTile(new Vector2(tile.y + i, tile.x)) == null ||
-                 this.GetTile(new Vector2(tile.y + i, tile.x)) == null)
+                // Move a tile not in boundaries
+                if (this.AllowedPos(tile))
                 {
-                    print("Move multiple to die");
+                    // Move single tile
+                    print("Move single");
+                    this.MoveTile(this.selectedTile, tile);
+                    this.UnSelectTile();
+                    this.TogglePlayerTurn();
+                }
+                else
+                {
+                    // Move multiple tiles
+                    print("Move multiple");
                     this.MoveMultipleTiles(tile);
-                    removed = true;
-                    break;
                 }
             }
-            if (removed)
+            else if (this.selectedTile != null && tile.value != this.player)
             {
-                this.CalculateTiles();
-                this.RemoveTile();
+                // Move a tile in boundaries
+                int[] c = { 1, -1 };
+                bool removed = false;
+                foreach (int i in c)
+                {
+                    if (this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
+                     this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
+                     this.GetTile(new Vector2(tile.y + i, tile.x)) == null ||
+                     this.GetTile(new Vector2(tile.y + i, tile.x)) == null)
+                    {
+                        print("Move multiple to die");
+                        this.MoveMultipleTiles(tile);
+                        removed = true;
+                        break;
+                    }
+                }
+                if (removed)
+                {
+                    this.CalculateTiles();
+                    this.RemoveTile();
+                }
             }
         }
     }

@@ -5,6 +5,7 @@ using Photon.Pun;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro; // <= THIS
+using Photon.Realtime;
 
 public class RoomManagement : MonoBehaviourPunCallbacks
 {
@@ -37,6 +38,11 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     {
         Debug.Log($"Joined a room: {this.roomName}");
         PhotonNetwork.LoadLevel("SampleScene");
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        GameObject.FindObjectOfType<GridManager>().OnPlayerJoin();
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)
