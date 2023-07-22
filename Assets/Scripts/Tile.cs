@@ -43,32 +43,26 @@ public class Tile : MonoBehaviourPun
 
     public void UpdateColor()
     {
-
         if (this.value == 0)
         {
             this.highlight.SetActive(false);
         }
-        // this._renderer.color = Color.clear;
         else if (this.value == 1)
         {
             this.highlight.SetActive(true);
             this.highlight.GetComponent<MeshRenderer>().material = this.white;
         }
-        // this._renderer.color = Color.white;
         else
         {
             this.highlight.SetActive(true);
             this.highlight.GetComponent<MeshRenderer>().material = this.black;
         }
         this.photonView.RPC("RPCUpdateColor", RpcTarget.All, this.x, this.y, this.value);
-        // this._renderer.color = Color.black;
-
     }
 
     [PunRPC]
     void RPCUpdateColor(int x, int y, int value)
     {
-        Debug.Log($"RPC Update Color {x} {y} {value}");
         if (this.x == x && this.y == y)
         {
             this.value = value;
@@ -76,13 +70,11 @@ public class Tile : MonoBehaviourPun
             {
                 this.highlight.SetActive(false);
             }
-            // this._renderer.color = Color.clear;
             else if (this.value == 1)
             {
                 this.highlight.SetActive(true);
                 this.highlight.GetComponent<MeshRenderer>().material = this.white;
             }
-            // this._renderer.color = Color.white;
             else
             {
                 this.highlight.SetActive(true);

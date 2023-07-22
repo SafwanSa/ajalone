@@ -25,7 +25,7 @@ public class GridManager : MonoBehaviour
         this.isRoomCreated = GameObject.FindObjectOfType<RoomManagement>().isRoomCreated;
         GameObject.FindObjectOfType<RoomManagement>().DestroyScene();
         this.player = 1;
-        StartCoroutine(LateStartCo(2f));
+        StartCoroutine(LateStartCo(1f));
     }
 
 
