@@ -14,16 +14,49 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int white;
     [SerializeField] private int black;
     [SerializeField] private List<GameObject> rows;
+    [SerializeField] private GameObject blackOuts;
+    [SerializeField] private GameObject whiteOuts;
+    private List<int> blackOutsIndicesFilled = new List<int>();
+    private List<int> whiteOutsIndicesFilled = new List<int>();
 
     private void Start()
     {
         this.player = 1;
-        // GenerateGrid();
-        GenerateGrid2();
+        GenerateGrid();
         CalculateTiles();
     }
 
-    private void GenerateGrid2()
+    private void RemoveTile()
+    {
+        List<int> _temp = this.player == 1 ? this.whiteOutsIndicesFilled : this.blackOutsIndicesFilled;
+        int indx = this.player == 1 ? 1 : 9;
+
+        for (int i = 0; i < 6; i++)
+        {
+            if (_temp.IndexOf(i) == -1)
+            {
+                GameObject _out = this.player == 2 ? this.blackOuts.transform.GetChild(i).gameObject : this.whiteOuts.transform.GetChild(i).gameObject;
+                var spawnedTile = Instantiate(this.tilePrefab, new Vector3(_out.transform.position.x, _out.transform.position.y, _out.transform.position.z), Quaternion.identity);
+                spawnedTile.GetComponent<CircleCollider2D>().radius = 0f;
+                spawnedTile.transform.parent = _out.transform;
+                RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
+                trans.anchorMin = new Vector2(0f, 0f);
+                trans.anchorMax = new Vector2(1f, 1f);
+                trans.pivot = new Vector2(0.5f, 0.5f);
+                RectTransformExtensions.SetLeft(trans, 20);
+                RectTransformExtensions.SetTop(trans, 25);
+                RectTransformExtensions.SetRight(trans, 20);
+                RectTransformExtensions.SetBottom(trans, 25);
+                trans.localPosition = new Vector3(trans.localPosition.x, trans.localPosition.y, -1);
+                spawnedTile.Init(indx, indx, this);
+                if (this.player == 2) this.blackOutsIndicesFilled.Add(i);
+                else this.whiteOutsIndicesFilled.Add(i);
+                break;
+            }
+        }
+    }
+
+    private void GenerateGrid()
     {
         this.tiles = new Dictionary<Vector2, Tile>();
         for (int i = 0; i < this.rows.Count; i++)
@@ -74,7 +107,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    private void GenerateGrid()
+    private void CreateGrid()
     {
         this.tiles = new Dictionary<Vector2, Tile>();
         var centerNumOfTiles = 9;
@@ -161,6 +194,7 @@ public class GridManager : MonoBehaviour
         {
             // Move a tile in boundaries
             int[] c = { 1, -1 };
+            bool removed = false;
             foreach (int i in c)
             {
                 if (this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
@@ -170,10 +204,15 @@ public class GridManager : MonoBehaviour
                 {
                     print("Move multiple to die");
                     this.MoveMultipleTiles(tile);
+                    removed = true;
                     break;
                 }
             }
-            this.CalculateTiles();
+            if (removed)
+            {
+                this.CalculateTiles();
+                this.RemoveTile();
+            }
         }
     }
 
