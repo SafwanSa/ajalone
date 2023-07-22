@@ -20,8 +20,14 @@ public class GridManager : MonoBehaviourPun
     private Tile selectedTile;
     public bool isRoomCreated;
     public int playersCount;
-    public Text player1Text;
-    public Text player2Text;
+    public GameObject player1Turn;
+    public GameObject player2Turn;
+    public Text winnerText;
+    public GameObject resultLayout;
+    public GameObject backgroundsContainer;
+    public GameObject rowsContainer;
+    public GameObject detailsContainer;
+    public GameObject outsContainer;
 
     private void Start()
     {
@@ -30,27 +36,81 @@ public class GridManager : MonoBehaviourPun
         if (!this.isRoomCreated)
         {
             this.cam.transform.rotation *= Quaternion.Euler(0, 0, 180);
-            this.player1Text.transform.rotation *= Quaternion.Euler(0, 0, 180);
-            this.player2Text.transform.rotation *= Quaternion.Euler(0, 0, 180);
-            this.player1Text.alignment = TextAnchor.MiddleRight;
-            this.player2Text.alignment = TextAnchor.MiddleRight;
+            this.player1Turn.transform.GetChild(0).transform.rotation *= Quaternion.Euler(0, 0, 180);
+            this.player1Turn.transform.GetChild(0).GetComponent<Text>().alignment = TextAnchor.MiddleRight;
+            this.player2Turn.transform.GetChild(0).transform.rotation *= Quaternion.Euler(0, 0, 180);
+            this.player2Turn.transform.GetChild(0).GetComponent<Text>().alignment = TextAnchor.MiddleRight;
         }
         StartCoroutine(LateStartCo(1f));
         OnPlayerJoin();
     }
 
+    [PunRPC]
+    private void RPCCheckWinner()
+    {
+        bool found = false;
+        if (this.blackOutsIndicesFilled.Count == 1)
+        {
+            // White wins
+            found = true;
+            this.winnerText.text = "White wins...";
+        }
+        else if (this.whiteOutsIndicesFilled.Count == 1)
+        {
+            // Black wins
+            this.winnerText.text = "Black wins...";
+            found = true;
+        }
+        if (found)
+        {
+            this.resultLayout.SetActive(true);
+            this.backgroundsContainer.SetActive(false);
+            this.rowsContainer.SetActive(false);
+            this.detailsContainer.SetActive(false);
+            this.outsContainer.SetActive(false);
+            if (!this.isRoomCreated) this.resultLayout.transform.rotation *= Quaternion.Euler(0, 0, 180);
+            for (int i = 0; i < this.rows.Count; i++)
+            {
+                this.rows[i].SetActive(false);
+            }
+            foreach (KeyValuePair<Vector2, Tile> pair in this.tiles)
+            {
+                pair.Value.gameObject.SetActive(false);
+            }
+            Tile[] ts = GameObject.FindObjectsOfType<Tile>();
+            for (int i = 0; i < ts.Length; i++)
+            {
+                ts[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private void CheckWinner()
+    {
+        this.photonView.RPC("RPCCheckWinner", RpcTarget.All);
+    }
+
+    private void OnExit()
+    {
+
+    }
 
     public void OnPlayerJoin()
     {
         this.playersCount = PhotonNetwork.CurrentRoom.PlayerCount;
-        this.player1Text.text = $"Player 1: Playing";
+        this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing";
         if (this.playersCount > 1)
         {
-            this.player2Text.text = $"Player 2: Playing";
+            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Playing";
+            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(false);
+            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(true);
+
+            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(true);
+            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(false);
         }
         else
         {
-            this.player2Text.text = $"Player 2: NAN";
+            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: NAN";
         }
     }
 
@@ -203,6 +263,12 @@ public class GridManager : MonoBehaviourPun
 
     private void CalculateTiles()
     {
+        this.photonView.RPC("RPCCalculateTiles", RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void RPCCalculateTiles()
+    {
         // Tile[] _tiles = this.tiles.Values.ToArray();
         this.white = 0;
         this.black = 0;
@@ -224,7 +290,26 @@ public class GridManager : MonoBehaviourPun
     {
 
         Debug.Log("Toggle Player Turn");
-        this.player = this.player == 1 ? 2 : 1;
+        // this.player = this.player == 1 ? 2 : 1;
+        if (this.player == 1)
+        {
+            this.player = 2;
+            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(false);
+            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(true);
+
+            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(true);
+            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(false);
+        }
+        else
+        {
+            this.player = 1;
+            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(false);
+            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(true);
+
+            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(true);
+            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(false);
+
+        }
     }
 
     public void SelectTile(Tile tile)
@@ -279,6 +364,7 @@ public class GridManager : MonoBehaviourPun
                 {
                     this.CalculateTiles();
                     this.RemoveTile();
+                    this.CheckWinner();
                 }
             }
         }
