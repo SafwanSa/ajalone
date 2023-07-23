@@ -27,7 +27,9 @@ public class RoomManagement : MonoBehaviourPunCallbacks
         this.roomName = GenerateRandomAlphaNumericStr(4).ToLower();
         this.isRoomCreated = true;
         this.SavePrefs();
-        PhotonNetwork.CreateRoom(this.roomName);
+        RoomOptions roomOptions = new RoomOptions();
+        roomOptions.MaxPlayers = 2;
+        PhotonNetwork.CreateRoom(this.roomName, roomOptions);
     }
 
     public void OnExit()
@@ -56,6 +58,7 @@ public class RoomManagement : MonoBehaviourPunCallbacks
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
+        Debug.Log($"Player: {newPlayer.UserId} has joined the room");
         GameObject.FindObjectOfType<GridManager>().OnPlayerJoin();
     }
 
