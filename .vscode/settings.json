@@ -52,5 +52,10 @@
 		"temp/": true,
 		"Temp/": true
 	},
-	"cSpell.words": ["Mathf", "Prefs"]
+	"cSpell.words": [
+		"Behaviour",
+		"Hashtable",
+		"Mathf",
+		"Prefs"
+	]
 }

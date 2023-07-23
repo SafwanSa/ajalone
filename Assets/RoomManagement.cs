@@ -23,23 +23,12 @@ public class RoomManagement : MonoBehaviourPunCallbacks
 
     public void CreateRoom()
     {
-
         this.roomName = GenerateRandomAlphaNumericStr(4).ToLower();
         this.isRoomCreated = true;
         this.SavePrefs();
         RoomOptions roomOptions = new RoomOptions();
         roomOptions.MaxPlayers = 2;
         PhotonNetwork.CreateRoom(this.roomName, roomOptions);
-    }
-
-    public void OnExit()
-    {
-        PhotonNetwork.LeaveRoom();
-    }
-
-    public override void OnLeftRoom()
-    {
-        PhotonNetwork.LoadLevel("LobbyScene");
     }
 
     public void JoinRoom()
@@ -59,12 +48,22 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         Debug.Log($"Player: {newPlayer.UserId} has joined the room");
-        GameObject.FindObjectOfType<GridManager>().OnPlayerJoin();
+        GameObject.FindObjectOfType<BoardUI>().OnPlayerJoin(newPlayer);
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
         errorMsg.text = message;
+    }
+
+    public void OnExit()
+    {
+        PhotonNetwork.LeaveRoom();
+    }
+
+    public override void OnLeftRoom()
+    {
+        PhotonNetwork.LoadLevel("LobbyScene");
     }
 
 

@@ -4,327 +4,108 @@ using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-public class GridManager : MonoBehaviourPun
+using ExitGames.Client.Photon;
+using Photon.Realtime;
+
+public class GridManager : MonoBehaviour, IOnEventCallback
 {
-    [SerializeField] private int width, height;
     [SerializeField] private Tile tilePrefab;
-    [SerializeField] private Transform cam;
-    [SerializeField] private List<GameObject> rows;
-    [SerializeField] private Dictionary<Vector2, Tile> tiles;
-    [SerializeField] private GameObject blackOuts;
-    [SerializeField] private GameObject whiteOuts;
     private List<int> blackOutsIndicesFilled = new List<int>();
     private List<int> whiteOutsIndicesFilled = new List<int>();
-    [SerializeField] private int white;
-    [SerializeField] private int black;
     public int player;
     private Tile selectedTile;
-    public bool isRoomCreated;
-    public int playersCount;
-    public Text roomName;
-    public GameObject player1Turn;
-    public GameObject player2Turn;
-    public Text winnerText;
-    public GameObject resultLayout;
-    public GameObject backgroundsContainer;
-    public GameObject rowsContainer;
-    public GameObject detailsContainer;
-    public GameObject outsContainer;
-    public List<GameObject> spawnedTiles = new List<GameObject>();
+    [SerializeField] private BoardUI boardUI;
+    [SerializeField] private BoardGenerator boardGenerator;
+
     private void Start()
     {
-        this.roomName.text = $"#Room: {PlayerPrefs.GetString("roomName").ToUpper()}";
-        this.isRoomCreated = PlayerPrefs.GetInt("isRoomCreated") == 1 ? true : false;
+        // TODO: IF master, set it to 1. Else, get it from room props
         this.player = 1;
-        if (!this.isRoomCreated)
-        {
-            print("Soft Start");
-            this.RotateCamera();
-            StartCoroutine(LateStartCo(2f));
-        }
-        else
-        {
-            print("Start");
-            GenerateGrid();
-            this.CalculateTiles();
-            this.OnPlayerJoin();
-        }
+        // if (PhotonNetwork.IsMasterClient) this.player = 1;
+        // else this.player = 2;
     }
 
-    private void RotateCamera()
+    public void OnEvent(EventData photonEvent)
     {
-        this.cam.transform.rotation *= Quaternion.Euler(0, 0, 180);
-        this.player1Turn.transform.GetChild(0).transform.rotation *= Quaternion.Euler(180, 0, 0);
-        this.player1Turn.transform.GetChild(0).GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
-        this.player2Turn.transform.GetChild(0).transform.rotation *= Quaternion.Euler(180, 0, 0);
-        this.player2Turn.transform.GetChild(0).GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
-        this.detailsContainer.transform.rotation *= Quaternion.Euler(180, 0, 180);
-        this.resultLayout.transform.rotation *= Quaternion.Euler(0, 0, 180);
-        this.backgroundsContainer.transform.rotation *= Quaternion.Euler(0, 0, 180);
+        Debug.Log(photonEvent.Code);
+        if (photonEvent.Code == Events.TogglePlayerTurnEvent)
+        {
+            // object[] data = (object[])photonEvent.CustomData;
+            Debug.Log("Toggle Player Event Handling...");
+            this.HandleTogglePlayerTurnEvent();
+        }
+        else if (photonEvent.Code == Events.CheckWinnerEvent)
+        {
+            // object[] data = (object[])photonEvent.CustomData;
+            Debug.Log("Check Winner Event Handling...");
+            this.HandleCheckWinnerEvent();
+        }
+        else if (photonEvent.Code == Events.RemoveTileEvent)
+        {
+            Debug.Log("Remove Tile Event Handling...");
+            object[] data = (object[])photonEvent.CustomData;
+            this.HandleRemoveTileEvent((int)data[0]);
+        }
+        else { }
     }
 
-    [PunRPC]
-    private void RPCCheckWinner()
+    private void HandleTogglePlayerTurnEvent()
     {
-        bool found = false;
+        this.player = this.player == 1 ? 2 : 1;
+        this.boardUI.UpdatePlayerTurn(this.player);
+    }
+
+    private void HandleRemoveTileEvent(int i)
+    {
+        this.boardGenerator.InstantiateDeadTilePrefab(this.player, i);
+        if (this.player == 2) this.blackOutsIndicesFilled.Add(i);
+        else this.whiteOutsIndicesFilled.Add(i);
+    }
+
+    private void HandleCheckWinnerEvent()
+    {
         if (this.blackOutsIndicesFilled.Count == 1)
         {
             // White wins
-            found = true;
-            this.winnerText.text = "White wins...";
+            this.boardUI.UpdateWinnerText("White");
         }
         else if (this.whiteOutsIndicesFilled.Count == 1)
         {
             // Black wins
-            this.winnerText.text = "Black wins...";
-            found = true;
+            this.boardUI.UpdateWinnerText("Black");
         }
-        if (found)
+        else { }
+    }
+
+    private void TogglePlayerTurn()
+    {
+        Events.RaiseEventToAll(Events.TogglePlayerTurnEvent, null);
+    }
+
+    private void RemoveTile()
+    {
+        // this.player, is updated because of the the toggle
+        List<int> _temp = this.player == 1 ? this.whiteOutsIndicesFilled : this.blackOutsIndicesFilled;
+        for (int i = 0; i < 6; i++)
         {
-            this.resultLayout.SetActive(true);
-            this.backgroundsContainer.SetActive(false);
-            this.rowsContainer.SetActive(false);
-            this.detailsContainer.SetActive(false);
-            this.outsContainer.SetActive(false);
-            for (int i = 0; i < this.rows.Count; i++)
+            if (_temp.IndexOf(i) == -1)
             {
-                this.rows[i].SetActive(false);
-            }
-            foreach (KeyValuePair<Vector2, Tile> pair in this.tiles)
-            {
-                pair.Value.gameObject.SetActive(false);
-            }
-            Tile[] ts = GameObject.FindObjectsOfType<Tile>();
-            for (int i = 0; i < ts.Length; i++)
-            {
-                ts[i].gameObject.SetActive(false);
+                // Found an empty place
+                Events.RaiseEventToAll(Events.RemoveTileEvent, new object[] { i });
+                break;
             }
         }
     }
 
     private void CheckWinner()
     {
-        this.photonView.RPC("RPCCheckWinner", RpcTarget.All);
+        Events.RaiseEventToAll(Events.CheckWinnerEvent, null);
     }
 
-    public void OnPlayerJoin()
-    {
-        this.playersCount = PhotonNetwork.CurrentRoom.PlayerCount;
-        this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing";
-        if (this.playersCount > 1)
-        {
-            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Playing";
-            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(false);
-            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(true);
-
-            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(true);
-            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(false);
-        }
-        else
-        {
-            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Waiting";
-        }
-    }
-
-    IEnumerator LateStartCo(float waitTime)
-    {
-        yield return new WaitForSeconds(waitTime);
-        this.SoftGenerateGrid();
-        this.CalculateTiles();
-        this.OnPlayerJoin();
-    }
-
-    private void RemoveTile()
-    {
-        List<int> _temp = this.player == 1 ? this.whiteOutsIndicesFilled : this.blackOutsIndicesFilled;
-        int indx = this.player == 1 ? 1 : 9;
-
-        for (int i = 0; i < 6; i++)
-        {
-            if (_temp.IndexOf(i) == -1)
-            {
-                this.photonView.RPC("RPCRemoveTile", RpcTarget.All, i, indx);
-                break;
-            }
-        }
-    }
-
-    [PunRPC]
-    private void RPCRemoveTile(int i, int indx)
-    {
-        GameObject _out = this.player == 2 ? this.blackOuts.transform.GetChild(i).gameObject : this.whiteOuts.transform.GetChild(i).gameObject;
-        object[] data = { indx, indx, this.player };
-        var spawnedTile = PhotonNetwork.Instantiate(
-            this.tilePrefab.name,
-            new Vector3(_out.transform.position.x, _out.transform.position.y, _out.transform.position.z),
-            Quaternion.identity,
-            0,
-            data
-        );
-        spawnedTile.GetComponent<CircleCollider2D>().radius = 0f;
-        spawnedTile.transform.parent = _out.transform;
-        RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
-        trans.anchorMin = new Vector2(0f, 0f);
-        trans.anchorMax = new Vector2(1f, 1f);
-        trans.pivot = new Vector2(0.5f, 0.5f);
-        RectTransformExtensions.SetLeft(trans, 20);
-        RectTransformExtensions.SetTop(trans, 25);
-        RectTransformExtensions.SetRight(trans, 20);
-        RectTransformExtensions.SetBottom(trans, 25);
-        trans.localPosition = new Vector3(trans.localPosition.x, trans.localPosition.y, -1);
-        Tile t = spawnedTile.GetComponent<Tile>();
-        t.Init(indx, indx, this);
-        if (this.player == 2) this.blackOutsIndicesFilled.Add(i);
-        else this.whiteOutsIndicesFilled.Add(i);
-    }
-
-    private void SoftGenerateGrid()
-    {
-        print("Soft gen");
-        this.tiles = new Dictionary<Vector2, Tile>();
-        Tile[] ts = GameObject.FindObjectsOfType<Tile>();
-        print(ts.Length);
-        for (int i = 0; i < ts.Length; i++)
-        {
-            if (ts[i].gameObject.tag != "Dummy")
-            {
-                object[] data = ts[i].gameObject.GetComponent<PhotonView>().InstantiationData;
-                ts[i].Init((int)data[2], (int)data[1], this);
-                this.tiles[new Vector2((int)data[1], (int)data[2])] = ts[i];
-            }
-        }
-    }
-
-    private int GetCorrectColor(int y, int x)
-    {
-        int value = 0;
-        if (y < 3 || (y == 3 && x > 2 && x < 6))
-            value = 1;
-        else if (y >= 8 || (y == 7 && x > 4 && x < 8))
-            value = 2;
-        else
-            value = 0;
-        return value;
-    }
-
-    private void GenerateGrid()
-    {
-        this.tiles = new Dictionary<Vector2, Tile>();
-        for (int i = 0; i < this.rows.Count; i++)
-        {
-            for (int j = 0; j < GetNumOfBallsInRow(i + 1); j++)
-            {
-                GameObject spot = this.rows[i].transform.GetChild(j).gameObject;
-                string[] name = spot.name.Split(char.Parse(" "));
-                int y = int.Parse(name[1]);
-                int x = int.Parse(name[2]);
-                object[] data = { spot.name, y, x, this.GetCorrectColor(y, x) };
-                var spawnedTile = PhotonNetwork.Instantiate(
-                    this.tilePrefab.name,
-                    new Vector3(spot.transform.position.x, spot.transform.position.y, spot.transform.position.z),
-                    Quaternion.identity,
-                    0,
-                    data
-                );
-                // this.spawnedTiles.Add(spawnedTile);
-                spawnedTile.name = spot.name;
-                spawnedTile.transform.parent = spot.transform;
-                RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
-                trans.anchorMin = new Vector2(0f, 0f);
-                trans.anchorMax = new Vector2(1f, 1f);
-                trans.pivot = new Vector2(0.5f, 0.5f);
-                RectTransformExtensions.SetLeft(trans, 20);
-                RectTransformExtensions.SetTop(trans, 25);
-                RectTransformExtensions.SetRight(trans, 20);
-                RectTransformExtensions.SetBottom(trans, 25);
-                trans.localPosition = new Vector3(trans.localPosition.x, trans.localPosition.y, -1);
-                Tile t = spawnedTile.GetComponent<Tile>();
-                t.Init(x, y, this);
-                this.tiles[new Vector2(y, x)] = t;
-            }
-        }
-    }
-
-    private int GetNumOfBallsInRow(int row)
-    {
-        switch (row)
-        {
-            case 1:
-            case 9:
-                return 5;
-            case 2:
-            case 8:
-                return 6;
-            case 3:
-            case 7:
-                return 7;
-            case 4:
-            case 6:
-                return 8;
-            case 5:
-                return 9;
-            default:
-                return -1;
-        }
-    }
-
-    private void CalculateTiles()
-    {
-        this.photonView.RPC("RPCCalculateTiles", RpcTarget.All);
-    }
-
-    [PunRPC]
-    private void RPCCalculateTiles()
-    {
-        // Tile[] _tiles = this.tiles.Values.ToArray();
-        this.white = 0;
-        this.black = 0;
-        if (this.tiles.Count > 0)
-        {
-            foreach (KeyValuePair<Vector2, Tile> pair in this.tiles)
-            {
-                if (pair.Value.value == 1) this.white++;
-                if (pair.Value.value == 2) this.black++;
-            }
-        }
-    }
-
-    private void TogglePlayerTurn()
-    {
-
-        this.photonView.RPC("RPCTogglePlayerTurn", RpcTarget.All);
-    }
-
-    [PunRPC]
-    private void RPCTogglePlayerTurn()
-    {
-
-        Debug.Log("Toggle Player Turn");
-        // this.player = this.player == 1 ? 2 : 1;
-        if (this.player == 1)
-        {
-            this.player = 2;
-            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(false);
-            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(true);
-
-            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(true);
-            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(false);
-        }
-        else
-        {
-            this.player = 1;
-            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(false);
-            this.player1Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(true);
-
-            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(true);
-            this.player2Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(false);
-
-        }
-    }
-
+    // Game Mechanics
     public void SelectTile(Tile tile)
     {
-        if (this.playersCount > 1 && this.player == PhotonNetwork.LocalPlayer.ActorNumber)
+        if (PhotonNetwork.CurrentRoom.PlayerCount > 1 && this.player == PhotonNetwork.LocalPlayer.ActorNumber)
         {
             if (this.selectedTile == null && tile.value == this.player)
             {
@@ -372,7 +153,7 @@ public class GridManager : MonoBehaviourPun
                 }
                 if (removed)
                 {
-                    this.CalculateTiles();
+                    // this.CalculateTiles();
                     this.RemoveTile();
                     this.CheckWinner();
                 }
@@ -421,7 +202,7 @@ public class GridManager : MonoBehaviourPun
 
     public Tile GetTile(Vector2 pos)
     {
-        if (this.tiles.TryGetValue(pos, out var tile))
+        if (this.boardGenerator.tiles.TryGetValue(pos, out var tile))
         {
             return tile;
         }
@@ -584,17 +365,16 @@ public class GridManager : MonoBehaviourPun
             this.UnSelectTile();
             this.TogglePlayerTurn();
         }
-
-
     }
 
 
-
-    private void OnDestroy()
+    private void OnEnable()
     {
-        for (int i = 0; i < this.spawnedTiles.Count; i++)
-        {
-            // PhotonNetwork.Destroy(this.spawnedTiles[i]);
-        }
+        PhotonNetwork.AddCallbackTarget(this);
+    }
+
+    private void OnDisable()
+    {
+        PhotonNetwork.RemoveCallbackTarget(this);
     }
 }

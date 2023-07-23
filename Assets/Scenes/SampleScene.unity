@@ -5756,7 +5756,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1151162665}
   - component: {fileID: 1151162664}
-  - component: {fileID: 1151162666}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: GridManager
@@ -5776,37 +5775,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 052105be0fe6d4d698be164bc8945c98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 16
-  height: 9
   tilePrefab: {fileID: 3725000342650472456, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
-  cam: {fileID: 519420032}
-  rows:
-  - {fileID: 1604419702}
-  - {fileID: 2002628225}
-  - {fileID: 949312325}
-  - {fileID: 1858873453}
-  - {fileID: 1436114796}
-  - {fileID: 243598174}
-  - {fileID: 1042430056}
-  - {fileID: 1641994470}
-  - {fileID: 327717366}
-  blackOuts: {fileID: 611601382}
-  whiteOuts: {fileID: 601196558}
-  white: 0
-  black: 0
   player: 0
-  isRoomCreated: 0
-  playersCount: 0
-  roomName: {fileID: 1254637756}
-  player1Turn: {fileID: 316957251}
-  player2Turn: {fileID: 406446304}
-  winnerText: {fileID: 345196700}
-  resultLayout: {fileID: 145452914}
-  backgroundsContainer: {fileID: 455384427}
-  rowsContainer: {fileID: 426708193}
-  detailsContainer: {fileID: 894256480}
-  outsContainer: {fileID: 596053345}
-  spawnedTiles: []
+  boardUI: {fileID: 1800772032}
+  boardGenerator: {fileID: 1291941806}
 --- !u!4 &1151162665
 Transform:
   m_ObjectHideFlags: 0
@@ -5821,28 +5793,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1151162666
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1151162663}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ObservedComponentsFoldoutOpen: 1
-  Group: 0
-  prefixField: -1
-  Synchronization: 3
-  OwnershipTransfer: 0
-  observableSearch: 2
-  ObservedComponents: []
-  sceneViewId: 1
-  InstantiationId: 0
-  isRuntimeInstantiated: 0
 --- !u!1 &1254637754
 GameObject:
   m_ObjectHideFlags: 0
@@ -6126,6 +6076,64 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3188447002535047555, guid: d431e1fa9336a486ab7be8d46c73ac1a, type: 3}
   m_PrefabInstance: {fileID: 1281492598}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1291941805
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1291941807}
+  - component: {fileID: 1291941806}
+  m_Layer: 0
+  m_Name: BoardGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1291941806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291941805}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 073d2c232f199434c9992f594ada1d87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  width: 16
+  height: 9
+  tilePrefab: {fileID: 3725000342650472456, guid: 6a411d977438f4a1eaff59ad221c37fb, type: 3}
+  rows:
+  - {fileID: 1604419702}
+  - {fileID: 2002628225}
+  - {fileID: 949312325}
+  - {fileID: 1858873453}
+  - {fileID: 1436114796}
+  - {fileID: 243598174}
+  - {fileID: 1042430056}
+  - {fileID: 1641994470}
+  - {fileID: 327717366}
+  blackOuts: {fileID: 611601382}
+  whiteOuts: {fileID: 601196558}
+--- !u!4 &1291941807
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291941805}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 94.21576, y: 661.5461, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1294157764
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8143,6 +8151,60 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1764466136}
   m_CullTransparentMesh: 1
+--- !u!1 &1800772031
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1800772033}
+  - component: {fileID: 1800772032}
+  m_Layer: 0
+  m_Name: BoardUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1800772032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1800772031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e59e21aea0fd146c59a3f027ae0153f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cam: {fileID: 519420032}
+  boardGenerator: {fileID: 1291941806}
+  roomName: {fileID: 1254637756}
+  winnerText: {fileID: 345196700}
+  player1Turn: {fileID: 316957251}
+  player2Turn: {fileID: 406446304}
+  resultLayout: {fileID: 145452914}
+  backgroundsContainer: {fileID: 455384427}
+  rowsContainer: {fileID: 426708193}
+  detailsContainer: {fileID: 894256480}
+  outsContainer: {fileID: 596053345}
+--- !u!4 &1800772033
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1800772031}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 94.21576, y: 661.5461, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1840906914
 PrefabInstance:
   m_ObjectHideFlags: 0
