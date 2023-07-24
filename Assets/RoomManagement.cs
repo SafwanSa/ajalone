@@ -70,8 +70,13 @@ public class RoomManagement : MonoBehaviourPunCallbacks
 
     public override void OnLeftRoom()
     {
-
         PhotonNetwork.LoadLevel("LobbyScene");
+    }
+
+    public override void OnMasterClientSwitched(Player newMasterClient)
+    {
+        Debug.Log("Master client changes, sync board and outs data to the new master");
+        GameObject.FindObjectOfType<BoardGenerator>().SetBoardStateForNewMaster(newMasterClient);
     }
 
 

@@ -14,11 +14,11 @@
 [*] Exit game
 [] Fix clicking on tiles at the end with wrong alignment
 [] Implement sideways move
-[] Handle exit and re-join
+[*] Handle exit and re-join
     [*] Save game turn
     [*] Load proper turn
     [&] Load board
     [*] Update UI if anyone leaves
     [*] Save out tiles to room props
     [*] Loading outs 
-    [] Handover the master when the master leaves
+    [*] Handover the master when the master leaves

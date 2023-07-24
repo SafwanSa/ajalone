@@ -180,6 +180,16 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
         Debug.Log("Board state set");
     }
 
+    public void SetBoardStateForNewMaster(Player newMasterClient)
+    {
+        // Update board sate
+        this.boardState = new Dictionary<string, int>();
+        foreach (KeyValuePair<Vector2, Tile> tile in this.tiles)
+        {
+            this.boardState[this.ToStr(tile.Value.y, tile.Value.x)] = tile.Value.value;
+        }
+    }
+
     private void UpdatePUNRoomProperties()
     {
         ExitGames.Client.Photon.Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
