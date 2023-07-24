@@ -12,6 +12,8 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
     [SerializeField] private Tile tilePrefab;
     [SerializeField] public List<GameObject> rows;
     [SerializeField] public Dictionary<Vector2, Tile> tiles;
+    [SerializeField] public List<int> blackOutsIndicesFilled = new List<int>();
+    [SerializeField] public List<int> whiteOutsIndicesFilled = new List<int>();
     [SerializeField] private Dictionary<string, int> boardState;
     [SerializeField] private GameObject blackOuts;
     [SerializeField] private GameObject whiteOuts;
@@ -30,6 +32,7 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
         {
             // Someone joins
             this.GeneratePreCreatedBoard();
+            this.GeneratePreCreatedOuts();
         }
     }
 
@@ -74,6 +77,32 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
         Debug.Log("Board data is loaded");
     }
 
+    private void GeneratePreCreatedOuts()
+    {
+        ExitGames.Client.Photon.Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
+        // Whites
+        for (int i = 0; i < 6; i++)
+        {
+            bool isOut = (bool)properties[$"white_{i}"];
+            if (isOut)
+            {
+                this.whiteOutsIndicesFilled.Add(i);
+                this.InstantiateDeadTilePrefab(1, i);
+            }
+        }
+        // Blacks
+        for (int i = 0; i < 6; i++)
+        {
+            bool isOut = (bool)properties[$"black_{i}"];
+            if (isOut)
+            {
+                this.blackOutsIndicesFilled.Add(i);
+                this.InstantiateDeadTilePrefab(2, i);
+            }
+        }
+        Debug.Log("Board outs data is loaded");
+    }
+
     private int InstantiateTilePrefab(int y, int x, int value, GameObject spot, bool defaultColors)
     {
         Tile spawnedTile = Instantiate(
@@ -106,9 +135,9 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
         return tileValue;
     }
 
-    public void InstantiateDeadTilePrefab(int player, int index)
+    public void InstantiateDeadTilePrefab(int tileValue, int index)
     {
-        GameObject _out = player == 2 ? this.blackOuts.transform.GetChild(index).gameObject : this.whiteOuts.transform.GetChild(index).gameObject;
+        GameObject _out = tileValue == 2 ? this.blackOuts.transform.GetChild(index).gameObject : this.whiteOuts.transform.GetChild(index).gameObject;
         Tile spawnedTile = Instantiate(
             this.tilePrefab,
             new Vector3(_out.transform.position.x, _out.transform.position.y, _out.transform.position.z),
@@ -125,7 +154,7 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
         RectTransformExtensions.SetRight(trans, 20);
         RectTransformExtensions.SetBottom(trans, 25);
         trans.localPosition = new Vector3(trans.localPosition.x, trans.localPosition.y, -1);
-        spawnedTile.Init(-1, -1, player);
+        spawnedTile.Init(-1, -1, tileValue);
     }
 
     private void SetupPUNRoomProperties()
@@ -135,6 +164,16 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
         foreach (KeyValuePair<string, int> tileData in this.boardState)
         {
             properties.Add(tileData.Key, tileData.Value);
+        }
+
+        // Init outs
+        for (int i = 0; i < 6; i++)
+        {
+            properties.Add($"black_{i}", false);
+        }
+        for (int i = 0; i < 6; i++)
+        {
+            properties.Add($"white_{i}", false);
         }
 
         PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
@@ -154,6 +193,24 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
         Debug.Log("Board state set");
     }
 
+    private void UpdateOutsRoomProperties(int tileValue, int i)
+    {
+        ExitGames.Client.Photon.Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        // Init outs
+        if (tileValue == 1)
+        {
+            properties[$"white_{i}"] = true;
+        }
+        else
+        {
+            properties[$"black_{i}"] = true;
+        }
+
+        PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
+        Debug.Log("Board outs state set");
+    }
+
     private void HandleUpdateBoardState()
     {
         foreach (KeyValuePair<Vector2, Tile> tile in this.tiles)
@@ -168,11 +225,40 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
         Events.RaiseEventToMaster(Events.UpdateBoardStateEvent, null);
     }
 
+    private void HandleRemoveTileEvent(int tileValue, int i)
+    {
+        this.InstantiateDeadTilePrefab(tileValue, i);
+        if (tileValue == 2) this.blackOutsIndicesFilled.Add(i);
+        else this.whiteOutsIndicesFilled.Add(i);
+        if (PhotonNetwork.IsMasterClient) this.UpdateOutsRoomProperties(tileValue, i);
+    }
+
+    public void RemoveTile(int tileValue)
+    {
+        // this.player, is updated because of the the toggle
+        List<int> _temp = tileValue == 1 ? this.whiteOutsIndicesFilled : this.blackOutsIndicesFilled;
+        for (int i = 0; i < 6; i++)
+        {
+            if (_temp.IndexOf(i) == -1)
+            {
+                // Found an empty place
+                Events.RaiseEventToAll(Events.RemoveTileEvent, new object[] { tileValue, i });
+                break;
+            }
+        }
+    }
+
     public void OnEvent(EventData photonEvent)
     {
         if (photonEvent.Code == Events.UpdateBoardStateEvent)
         {
             this.HandleUpdateBoardState();
+        }
+        else if (photonEvent.Code == Events.RemoveTileEvent)
+        {
+            Debug.Log("Remove Tile Event Handling...");
+            object[] data = (object[])photonEvent.CustomData;
+            this.HandleRemoveTileEvent((int)data[0], (int)data[1]);
         }
     }
 

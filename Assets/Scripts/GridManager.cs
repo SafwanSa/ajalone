@@ -10,8 +10,6 @@ using Photon.Realtime;
 public class GridManager : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] private Tile tilePrefab;
-    private List<int> blackOutsIndicesFilled = new List<int>();
-    private List<int> whiteOutsIndicesFilled = new List<int>();
     public int player;
     private Tile selectedTile;
     public BoardUI boardUI;
@@ -28,50 +26,22 @@ public class GridManager : MonoBehaviour, IOnEventCallback
             Debug.Log("Check Winner Event Handling...");
             this.HandleCheckWinnerEvent();
         }
-        else if (photonEvent.Code == Events.RemoveTileEvent)
-        {
-            Debug.Log("Remove Tile Event Handling...");
-            object[] data = (object[])photonEvent.CustomData;
-            this.HandleRemoveTileEvent((int)data[0]);
-        }
         else { }
-    }
-
-    private void HandleRemoveTileEvent(int i)
-    {
-        this.boardGenerator.InstantiateDeadTilePrefab(this.player, i);
-        if (this.player == 2) this.blackOutsIndicesFilled.Add(i);
-        else this.whiteOutsIndicesFilled.Add(i);
     }
 
     private void HandleCheckWinnerEvent()
     {
-        if (this.blackOutsIndicesFilled.Count == 1)
+        if (this.boardGenerator.blackOutsIndicesFilled.Count == 2)
         {
             // White wins
             this.boardUI.UpdateWinnerText("White");
         }
-        else if (this.whiteOutsIndicesFilled.Count == 1)
+        else if (this.boardGenerator.whiteOutsIndicesFilled.Count == 2)
         {
             // Black wins
             this.boardUI.UpdateWinnerText("Black");
         }
         else { }
-    }
-
-    private void RemoveTile()
-    {
-        // this.player, is updated because of the the toggle
-        List<int> _temp = this.player == 1 ? this.whiteOutsIndicesFilled : this.blackOutsIndicesFilled;
-        for (int i = 0; i < 6; i++)
-        {
-            if (_temp.IndexOf(i) == -1)
-            {
-                // Found an empty place
-                Events.RaiseEventToAll(Events.RemoveTileEvent, new object[] { i });
-                break;
-            }
-        }
     }
 
     private void CheckWinner()
@@ -115,6 +85,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                 // Move a tile in boundaries
                 int[] c = { 1, -1 };
                 bool removed = false;
+                int oldTileValue = tile.value;
                 foreach (int i in c)
                 {
                     if (this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
@@ -123,7 +94,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                      this.GetTile(new Vector2(tile.y + i, tile.x)) == null)
                     {
                         print("Move multiple to die");
-                        this.MoveMultipleTiles(tile);
+                        this.MoveMultipleTiles(newTile: tile);
                         removed = true;
                         break;
                     }
@@ -131,7 +102,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                 if (removed)
                 {
                     // this.CalculateTiles();
-                    this.RemoveTile();
+                    this.boardGenerator.RemoveTile(oldTileValue);
                     this.CheckWinner();
                 }
             }
