@@ -23,21 +23,9 @@ public class BoardUI : MonoBehaviour
     private void Start()
     {
         this.roomName.text = $"#Room: {PhotonNetwork.CurrentRoom.Name.ToUpper()}";
-        // TODO: Do not use master client, use player number 1 or 2. Maybe turn
-        if (PhotonNetwork.IsMasterClient)
-        {
-            this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing - {PhotonNetwork.LocalPlayer.ActorNumber.ToString()}";
-            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Waiting";
-        }
-        else
-        {
-            // this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing";
-            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Playing - {PhotonNetwork.LocalPlayer.ActorNumber.ToString()}";
-            this.RotateCamera();
-        }
     }
 
-    private void RotateCamera()
+    public void RotateCamera()
     {
         this.cam.transform.rotation *= Quaternion.Euler(0, 0, 180);
         this.player1Turn.transform.GetChild(0).transform.rotation *= Quaternion.Euler(180, 0, 0);
@@ -49,11 +37,28 @@ public class BoardUI : MonoBehaviour
         this.backgroundsContainer.transform.rotation *= Quaternion.Euler(0, 0, 180);
     }
 
-    public void UpdateRoomPlayersUI()
+    public void UpdatePlayerUI()
     {
+        this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Waiting";
+        this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Waiting";
         // If player 1 or 2 leaves, update the text
-        // this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: --";
-        // this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: --";
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            if (player.UserId == this.GetCreatorId())
+            {
+                this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing";
+            }
+            if (player.UserId != this.GetCreatorId())
+            {
+                this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Playing";
+            }
+        }
+    }
+
+    private string GetCreatorId()
+    {
+        ExitGames.Client.Photon.Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
+        return (string)properties["masterUserId"];
     }
 
     public void UpdateWinnerText(string winner)

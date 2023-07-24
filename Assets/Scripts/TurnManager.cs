@@ -25,8 +25,13 @@ public class TurnManager : MonoBehaviour, IOnEventCallback
         {
             // Get the current turn from the room props
             this.GetTurnState();
+            if (!IsRoomCreator(PhotonNetwork.LocalPlayer))
+            {
+                this.gridManager.boardUI.RotateCamera();
+            }
         }
         this.HandleTogglePlayerTurnEvent(this.turn);
+        this.gridManager.boardUI.UpdatePlayerUI();
     }
 
     /// <summary>Call to switch the turn (used by both players).</summary>
@@ -69,6 +74,7 @@ public class TurnManager : MonoBehaviour, IOnEventCallback
     {
         ExitGames.Client.Photon.Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
         properties.Add("gameTurn", this.turn);
+        properties.Add("masterUserId", PhotonNetwork.LocalPlayer.UserId);
         PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
         Debug.Log("Turn state set");
     }
@@ -79,6 +85,17 @@ public class TurnManager : MonoBehaviour, IOnEventCallback
         ExitGames.Client.Photon.Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
         this.turn = (int)properties["gameTurn"];
         Debug.Log("Turn data is loaded");
+    }
+
+    private string GetCreatorId()
+    {
+        ExitGames.Client.Photon.Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
+        return (string)properties["masterUserId"];
+    }
+
+    private bool IsRoomCreator(Player player)
+    {
+        return this.GetCreatorId() == player.UserId.ToString();
     }
 
     private void OnEnable()

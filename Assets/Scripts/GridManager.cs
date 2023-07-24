@@ -18,9 +18,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
     [SerializeField] private BoardGenerator boardGenerator;
     [SerializeField] private TurnManager turnManager;
 
-    private void Start()
-    {
-    }
+    private void Start() { }
 
     public void OnEvent(EventData photonEvent)
     {
@@ -84,7 +82,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
     // Game Mechanics
     public void SelectTile(Tile tile)
     {
-        if (PhotonNetwork.CurrentRoom.PlayerCount > 1 && this.player == PhotonNetwork.LocalPlayer.ActorNumber)
+        if (PhotonNetwork.CurrentRoom.PlayerCount > 1)
         {
             if (this.selectedTile == null && tile.value == this.player)
             {

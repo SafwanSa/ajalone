@@ -20,4 +20,4 @@
     [*] Load proper turn
     [] Load board and outs statuses when rejoining
     [] Handover the master when the master leaves
-    [] Update UI if anyone leaves
+    [*] Update UI if anyone leaves
