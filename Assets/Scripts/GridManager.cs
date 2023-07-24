@@ -14,8 +14,8 @@ public class GridManager : MonoBehaviour, IOnEventCallback
     private List<int> whiteOutsIndicesFilled = new List<int>();
     public int player;
     private Tile selectedTile;
-    [SerializeField] public BoardUI boardUI;
-    [SerializeField] private BoardGenerator boardGenerator;
+    public BoardUI boardUI;
+    public BoardGenerator boardGenerator;
     [SerializeField] private TurnManager turnManager;
 
     private void Start() { }

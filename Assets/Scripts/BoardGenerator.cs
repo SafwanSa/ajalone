@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
-// using UnityEngine.UI;
-// using UnityEngine.SceneManagement;
+using ExitGames.Client.Photon;
+using Photon.Realtime;
 
 
-public class BoardGenerator : MonoBehaviour
+public class BoardGenerator : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] private int width, height;
     [SerializeField] private Tile tilePrefab;
@@ -141,6 +141,41 @@ public class BoardGenerator : MonoBehaviour
         Debug.Log("Board state set");
     }
 
+    private void UpdatePUNRoomProperties()
+    {
+        ExitGames.Client.Photon.Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        foreach (KeyValuePair<string, int> tileData in this.boardState)
+        {
+            properties[tileData.Key] = tileData.Value;
+        }
+
+        PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
+        Debug.Log("Board state set");
+    }
+
+    private void HandleUpdateBoardState()
+    {
+        foreach (KeyValuePair<Vector2, Tile> tile in this.tiles)
+        {
+            this.boardState[this.ToStr(tile.Value.y, tile.Value.x)] = tile.Value.value;
+        }
+        this.UpdatePUNRoomProperties();
+    }
+
+    public void UpdateBoardState()
+    {
+        Events.RaiseEventToMaster(Events.UpdateBoardStateEvent, null);
+    }
+
+    public void OnEvent(EventData photonEvent)
+    {
+        if (photonEvent.Code == Events.UpdateBoardStateEvent)
+        {
+            this.HandleUpdateBoardState();
+        }
+    }
+
     private int GetNumOfBallsInRow(int row)
     {
         switch (row)
@@ -188,4 +223,13 @@ public class BoardGenerator : MonoBehaviour
         return $"{y},{x}";
     }
 
+    private void OnEnable()
+    {
+        PhotonNetwork.AddCallbackTarget(this);
+    }
+
+    private void OnDisable()
+    {
+        PhotonNetwork.RemoveCallbackTarget(this);
+    }
 }

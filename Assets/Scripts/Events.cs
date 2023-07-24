@@ -11,11 +11,18 @@ public static class Events
     public static readonly byte TogglePlayerTurnEvent = 1;
     public static readonly byte CheckWinnerEvent = 2;
     public static readonly byte RemoveTileEvent = 3;
+    public static readonly byte UpdateBoardStateEvent = 4;
 
 
     public static void RaiseEventToAll(byte evCode, object[] content)
     {
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+        PhotonNetwork.RaiseEvent(evCode, content, raiseEventOptions, SendOptions.SendReliable);
+    }
+
+    public static void RaiseEventToMaster(byte evCode, object[] content)
+    {
+        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.MasterClient };
         PhotonNetwork.RaiseEvent(evCode, content, raiseEventOptions, SendOptions.SendReliable);
     }
 

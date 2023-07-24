@@ -40,6 +40,7 @@ public class TurnManager : MonoBehaviour, IOnEventCallback
         int turn = this.turn == 1 ? 2 : 1;
         Debug.Log("Turn handed: " + this.turn);
         Events.RaiseEventToAll(Events.TogglePlayerTurnEvent, new object[] { turn });
+        this.gridManager.boardGenerator.UpdateBoardState(); // This raises an event to the master to update BoardState
     }
 
     public void OnEvent(EventData photonEvent)
