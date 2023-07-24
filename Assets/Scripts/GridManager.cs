@@ -14,27 +14,17 @@ public class GridManager : MonoBehaviour, IOnEventCallback
     private List<int> whiteOutsIndicesFilled = new List<int>();
     public int player;
     private Tile selectedTile;
-    [SerializeField] private BoardUI boardUI;
+    [SerializeField] public BoardUI boardUI;
     [SerializeField] private BoardGenerator boardGenerator;
+    [SerializeField] private TurnManager turnManager;
 
     private void Start()
     {
-        // TODO: IF master, set it to 1. Else, get it from room props
-        this.player = 1;
-        // if (PhotonNetwork.IsMasterClient) this.player = 1;
-        // else this.player = 2;
     }
 
     public void OnEvent(EventData photonEvent)
     {
-        Debug.Log(photonEvent.Code);
-        if (photonEvent.Code == Events.TogglePlayerTurnEvent)
-        {
-            // object[] data = (object[])photonEvent.CustomData;
-            Debug.Log("Toggle Player Event Handling...");
-            this.HandleTogglePlayerTurnEvent();
-        }
-        else if (photonEvent.Code == Events.CheckWinnerEvent)
+        if (photonEvent.Code == Events.CheckWinnerEvent)
         {
             // object[] data = (object[])photonEvent.CustomData;
             Debug.Log("Check Winner Event Handling...");
@@ -47,12 +37,6 @@ public class GridManager : MonoBehaviour, IOnEventCallback
             this.HandleRemoveTileEvent((int)data[0]);
         }
         else { }
-    }
-
-    private void HandleTogglePlayerTurnEvent()
-    {
-        this.player = this.player == 1 ? 2 : 1;
-        this.boardUI.UpdatePlayerTurn(this.player);
     }
 
     private void HandleRemoveTileEvent(int i)
@@ -75,11 +59,6 @@ public class GridManager : MonoBehaviour, IOnEventCallback
             this.boardUI.UpdateWinnerText("Black");
         }
         else { }
-    }
-
-    private void TogglePlayerTurn()
-    {
-        Events.RaiseEventToAll(Events.TogglePlayerTurnEvent, null);
     }
 
     private void RemoveTile()
@@ -124,7 +103,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                     print("Move single");
                     this.MoveTile(this.selectedTile, tile);
                     this.UnSelectTile();
-                    this.TogglePlayerTurn();
+                    this.turnManager.HandTurn();
                 }
                 else
                 {
@@ -363,7 +342,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                 this.MoveTile(selectedTiles[i + 1], selectedTiles[i]);
             }
             this.UnSelectTile();
-            this.TogglePlayerTurn();
+            this.turnManager.HandTurn();
         }
     }
 

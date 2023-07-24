@@ -23,16 +23,16 @@ public class BoardUI : MonoBehaviour
     private void Start()
     {
         this.roomName.text = $"#Room: {PhotonNetwork.CurrentRoom.Name.ToUpper()}";
+        // TODO: Do not use master client, use player number 1 or 2. Maybe turn
         if (PhotonNetwork.IsMasterClient)
         {
-            this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing";
+            this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing - {PhotonNetwork.LocalPlayer.ActorNumber.ToString()}";
             this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Waiting";
         }
         else
         {
-            this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing";
-            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Playing";
-            this.UpdatePlayerTurn(1);
+            // this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing";
+            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Playing - {PhotonNetwork.LocalPlayer.ActorNumber.ToString()}";
             this.RotateCamera();
         }
     }
@@ -49,22 +49,12 @@ public class BoardUI : MonoBehaviour
         this.backgroundsContainer.transform.rotation *= Quaternion.Euler(0, 0, 180);
     }
 
-
-    public void OnPlayerJoin(Player newPlayer)
+    public void UpdateRoomPlayersUI()
     {
-
-        if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
-        {
-
-        }
-        else
-        {
-            this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: Playing";
-            this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: Playing";
-            this.UpdatePlayerTurn(1);
-        }
+        // If player 1 or 2 leaves, update the text
+        // this.player1Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 1: --";
+        // this.player2Turn.transform.GetChild(0).GetComponent<Text>().text = $"Player 2: --";
     }
-
 
     public void UpdateWinnerText(string winner)
     {
@@ -108,7 +98,6 @@ public class BoardUI : MonoBehaviour
             this.player1Turn.transform.GetChild(1).GetComponent<Tile>().highlight.SetActive(true);
             this.player1Turn.transform.GetChild(1).GetComponent<Tile>().selected.SetActive(false);
         }
-
     }
 
 }

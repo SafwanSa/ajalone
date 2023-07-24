@@ -71,7 +71,7 @@ public class BoardGenerator : MonoBehaviour
             }
         }
 
-        Debug.Log("Data loaded");
+        Debug.Log("Board data is loaded");
     }
 
     private int InstantiateTilePrefab(int y, int x, int value, GameObject spot, bool defaultColors)
