@@ -12,7 +12,7 @@
 [*] Join game
 [*] Win/Lose
 [*] Exit game
-[] Fix clicking on tiles at the end with wrong alignment
+[*] Fix clicking on tiles at the end with wrong alignment
 [] Implement sideways move
 [*] Handle exit and re-join
     [*] Save game turn

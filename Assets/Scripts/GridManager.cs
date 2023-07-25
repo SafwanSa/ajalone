@@ -50,9 +50,27 @@ public class GridManager : MonoBehaviour, IOnEventCallback
     }
 
     // Game Mechanics
+    public bool IsOnBoundaries(Tile tile)
+    {
+        int[] c = { 1, -1 };
+        bool onBoundaries = false;
+        foreach (int i in c)
+        {
+            if (this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
+             this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
+             this.GetTile(new Vector2(tile.y + i, tile.x)) == null ||
+             this.GetTile(new Vector2(tile.y + i, tile.x)) == null)
+            {
+                onBoundaries = true;
+                break;
+            }
+        }
+        return onBoundaries;
+    }
+
     public void SelectTile(Tile tile)
     {
-        if (PhotonNetwork.CurrentRoom.PlayerCount > 1)
+        if (PhotonNetwork.CurrentRoom.PlayerCount > 1 || true)  // TODO: Remove this
         {
             if (this.selectedTile == null && tile.value == this.player)
             {
@@ -83,25 +101,18 @@ public class GridManager : MonoBehaviour, IOnEventCallback
             else if (this.selectedTile != null && tile.value != this.player)
             {
                 // Move a tile in boundaries
-                int[] c = { 1, -1 };
                 bool removed = false;
                 int oldTileValue = tile.value;
-                foreach (int i in c)
+                bool onBoundaries = this.IsOnBoundaries(tile);
+
+                if (onBoundaries)
                 {
-                    if (this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
-                     this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
-                     this.GetTile(new Vector2(tile.y + i, tile.x)) == null ||
-                     this.GetTile(new Vector2(tile.y + i, tile.x)) == null)
-                    {
-                        print("Move multiple to die");
-                        this.MoveMultipleTiles(newTile: tile);
-                        removed = true;
-                        break;
-                    }
+                    print("Move multiple to die");
+                    Tile lastMovedTile = this.MoveMultipleTiles(newTile: tile);
+                    removed = lastMovedTile && lastMovedTile == tile;
                 }
                 if (removed)
                 {
-                    // this.CalculateTiles();
                     this.boardGenerator.RemoveTile(oldTileValue);
                     this.CheckWinner();
                 }
@@ -115,6 +126,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
         nextTile.UpdateColor();
         tile.value = 0;
         tile.UpdateColor();
+        // Debug.Log($"Moving {tile.y},{tile.x} to {nextTile.y},{nextTile.x}");
     }
 
     public void UnSelectTile()
@@ -175,20 +187,23 @@ public class GridManager : MonoBehaviour, IOnEventCallback
             // Loop through the tiles between [newTile, selectedTile]
             int dir = (newTile.y - selectedTile.y);
             dir = dir < 0 ? -1 : 1;
-            int start = dir > 0 ? maxY : minY;
-            int stop = dir > 0 ? minY : maxY;
-            bool condition = dir > 0 ? (start >= stop) : (start <= stop); // start >= stop
-            while (condition)
+            int start = dir > 0 ? minY : maxY;
+            int stop = dir > 0 ? maxY : minY;
+            bool condition = dir > 0 ? (start <= stop) : (start >= stop); // start <= stop
+            bool foundEmpty = false;
+            while (condition && !foundEmpty)
             {
                 // print($"x={newTile.x}, y={start}");
                 // print($"dir={dir}");
                 // print($"start={start}");
                 // print($"stop={stop}");
                 // print($"condition={condition}");
-                selectedTiles.Add(this.GetTile(new Vector2(start, newTile.x)));
-                start += (dir * -1);
+                Tile t = this.GetTile(new Vector2(start, newTile.x));
+                if (t.value == 0) foundEmpty = true;
+                selectedTiles.Add(t);
+                start += dir;
                 // print($"start={start}");
-                condition = dir > 0 ? (start >= stop) : (start <= stop); // start >= stop
+                condition = dir > 0 ? (start <= stop) : (start >= stop); // start <= stop
             }
             int y = selectedTile.y;
             while (y >= 1 && y <= 9)
@@ -207,14 +222,17 @@ public class GridManager : MonoBehaviour, IOnEventCallback
             // Loop through the tiles between [newTile, selectedTile]
             int dir = (newTile.x - selectedTile.x);
             dir = dir < 0 ? -1 : 1;
-            int start = dir > 0 ? maxX : minX;
-            int stop = dir > 0 ? minX : maxX;
-            bool condition = dir > 0 ? (start >= stop) : (start <= stop); // start <= stop
-            while (condition)
+            int start = dir > 0 ? minX : maxX;
+            int stop = dir > 0 ? maxX : minX;
+            bool condition = dir > 0 ? (start <= stop) : (start >= stop);
+            bool foundEmpty = false;
+            while (condition && !foundEmpty)
             {
-                selectedTiles.Add(this.GetTile(new Vector2(newTile.y, start)));
-                start += (dir * -1);
-                condition = dir > 0 ? (start >= stop) : (start <= stop); // start <= stop
+                Tile t = this.GetTile(new Vector2(newTile.y, start));
+                if (t.value == 0) foundEmpty = true;
+                selectedTiles.Add(t);
+                start += dir;
+                condition = dir > 0 ? (start <= stop) : (start >= stop);
             }
             int x = selectedTile.x;
             while (x >= 1 && x <= 9)
@@ -233,15 +251,18 @@ public class GridManager : MonoBehaviour, IOnEventCallback
             // Loop through the tiles between [newTile, selectedTile]
             int dir = (newTile.x - selectedTile.x);
             dir = dir < 0 ? -1 : 1;
-            int x = newTile.x;
-            int y = newTile.y;
-            bool condition = dir > 0 ? (x >= selectedTile.x && y >= selectedTile.y) : (x <= selectedTile.x && y <= selectedTile.y);
-            while (condition)
+            int x = selectedTile.x;
+            int y = selectedTile.y;
+            bool condition = dir > 0 ? (x <= newTile.x && y <= newTile.y) : (x >= newTile.x && y >= newTile.y);
+            bool foundEmpty = false;
+            while (condition && !foundEmpty)
             {
-                selectedTiles.Add(this.GetTile(new Vector2(y, x)));
-                x += (dir * -1);
-                y += (dir * -1);
-                condition = dir > 0 ? (x >= selectedTile.x && y >= selectedTile.y) : (x <= selectedTile.x && y <= selectedTile.y);
+                Tile t = this.GetTile(new Vector2(y, x));
+                if (t.value == 0) foundEmpty = true;
+                selectedTiles.Add(t);
+                x += dir;
+                y += dir;
+                condition = dir > 0 ? (x <= newTile.x && y <= newTile.y) : (x >= newTile.x && y >= newTile.y);
             }
             x = selectedTile.x;
             y = selectedTile.y;
@@ -262,7 +283,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
         // return selectedTiles;
     }
 
-    private void MoveMultipleTiles(Tile newTile)
+    private Tile MoveMultipleTiles(Tile newTile)
     {
         List<Tile> selectedTiles = new List<Tile>();
         List<int> directionalValues = new List<int>(); // All values in the dir of the move [selectedTile, last bounded tile]
@@ -277,9 +298,9 @@ public class GridManager : MonoBehaviour, IOnEventCallback
         bool friendlyOnTheWay = false;
         bool startCountingEnemy = false;
         bool startCountingFriendly = false;
-        foreach (int var in directionalValues)
+        foreach (Tile var in selectedTiles)
         {
-            print(var);
+            print($"y={var.y}, x={var.x}, v={var.value} is selected");
         }
         for (int i = 0; i < directionalValues.Count; i++)
         {
@@ -306,13 +327,15 @@ public class GridManager : MonoBehaviour, IOnEventCallback
         // If counter < selectedTiles.Count - 1 and no friendly tiles ahead, move them
         if (enemyCounter < friendlyCounter && !friendlyOnTheWay && friendlyCounter <= 3)
         {
-            for (int i = 0; i < selectedTiles.Count - 1; i++)
+            for (int i = selectedTiles.Count - 1; i > 0; i--)
             {
-                this.MoveTile(selectedTiles[i + 1], selectedTiles[i]);
+                this.MoveTile(selectedTiles[i - 1], selectedTiles[i]);
             }
             this.UnSelectTile();
             this.turnManager.HandTurn();
+            return selectedTiles[selectedTiles.Count - 1];
         }
+        return null;
     }
 
 
