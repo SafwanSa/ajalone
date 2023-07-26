@@ -57,9 +57,8 @@ public class GridManager : MonoBehaviour, IOnEventCallback
         foreach (int i in c)
         {
             if (this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
-             this.GetTile(new Vector2(tile.y, tile.x + i)) == null ||
              this.GetTile(new Vector2(tile.y + i, tile.x)) == null ||
-             this.GetTile(new Vector2(tile.y + i, tile.x)) == null)
+             this.GetTile(new Vector2(tile.y + i, tile.x + i)) == null)
             {
                 onBoundaries = true;
                 break;
@@ -172,6 +171,23 @@ public class GridManager : MonoBehaviour, IOnEventCallback
         }
     }
 
+    public bool IsOnAllowed(Tile tile, Tile otherTile)
+    {
+        int[] c = { 1, -1 };
+        bool onAllowed = false;
+        foreach (int i in c)
+        {
+            if (this.GetTile(new Vector2(tile.y, tile.x + i)) == otherTile ||
+                this.GetTile(new Vector2(tile.y + i, tile.x)) == otherTile ||
+                this.GetTile(new Vector2(tile.y + i, tile.x + i)) == otherTile)
+            {
+                onAllowed = true;
+                break;
+            }
+        }
+        return onAllowed;
+    }
+
     private void GetInvolvedTiles(Tile newTile, ref List<Tile> selectedTiles, ref List<int> directionalValues)
     {
         int maxX = Mathf.Max(newTile.x, selectedTile.x);
@@ -276,11 +292,285 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                 x += dir;
             }
         }
+        else if (Mathf.Abs(newTile.x - selectedTile.x) <= 3 && Mathf.Abs(newTile.y - selectedTile.y) <= 3)
+        {
+            // Sideways ! moves using different way
+            // TODO: Refactor this spaghetti code!!
+            print("Sideways");
+            List<Tile> __tiles = new List<Tile>();
+            __tiles.Add(selectedTile);
+            int diffY = newTile.y - selectedTile.y;
+            int diffX = newTile.x - selectedTile.x;
+            // int dirX = diffX > 0 ? 1 : -1;
+            int searchX = 0;
+            int searchY = 0;
+
+            // Where to search
+            // Move next till newTile is on the allowed positions
+            bool foundOther = false;
+            int counter = 9;
+            if (diffY >= 1)
+            {
+                // Top
+                Debug.Log("On Top");
+                if (diffX >= 1)
+                {
+                    Debug.Log("On Right and center");
+                    // Right and center
+                    // Search right-dig, left-dig, and right
+                    // ! Searching right-dig
+                    Debug.Log("Searching right-dig");
+                    searchY = 1;
+                    searchX = 1;
+                    while (counter >= 0)
+                    {
+                        Tile temp = this.GetTile(new Vector2(selectedTile.y + searchY, selectedTile.x + searchX));
+                        if (temp == null || temp.value != selectedTile.value) break;
+                        __tiles.Add(temp);
+                        if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                        counter -= 1;
+                        searchY += 1;
+                        searchX += 1;
+                    }
+                    if (!foundOther)
+                    {
+                        counter = 9;
+                        if (__tiles.Count > 1)
+                            __tiles.RemoveRange(1, __tiles.Count - 1);
+                        // ! Searching left-dig
+                        Debug.Log("Searching left-dig");
+                        searchY = 1;
+                        while (counter >= 0)
+                        {
+                            Tile temp = this.GetTile(new Vector2(selectedTile.y + searchY, selectedTile.x));
+                            if (temp == null || temp.value != selectedTile.value) break;
+                            __tiles.Add(temp);
+                            if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                            counter -= 1;
+                            searchY += 1;
+                        }
+                    }
+                    if (!foundOther)
+                    {
+                        counter = 9;
+                        if (__tiles.Count > 1)
+                            __tiles.RemoveRange(1, __tiles.Count - 1);
+                        // ! Searching right
+                        Debug.Log("Searching right");
+                        searchX = 1;
+                        while (counter >= 0)
+                        {
+                            Tile temp = this.GetTile(new Vector2(selectedTile.y + searchX, selectedTile.x));
+                            if (temp == null || temp.value != selectedTile.value) break;
+                            __tiles.Add(temp);
+                            if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                            counter -= 1;
+                            searchX += 1;
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.Log("On Left");
+                    // Left
+                    // Search left-dig and left
+                    // ! Searching left-dig
+                    Debug.Log("Searching left-dig");
+                    searchY = 1;
+                    while (counter >= 0)
+                    {
+                        Tile temp = this.GetTile(new Vector2(selectedTile.y + searchY, selectedTile.x));
+                        if (temp == null || temp.value != selectedTile.value) break;
+                        __tiles.Add(temp);
+                        if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                        counter -= 1;
+                        searchY += 1;
+                    }
+                    if (!foundOther)
+                    {
+                        counter = 9;
+                        if (__tiles.Count > 1)
+                            __tiles.RemoveRange(1, __tiles.Count - 1);
+                        // ! Searching left
+                        Debug.Log("Searching left");
+                        searchX = -1;
+                        while (counter >= 0)
+                        {
+                            Tile temp = this.GetTile(new Vector2(selectedTile.y, selectedTile.x + searchX));
+                            if (temp == null || temp.value != selectedTile.value) break;
+                            __tiles.Add(temp);
+                            if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                            counter -= 1;
+                            searchX -= 1;
+                        }
+                    }
+                }
+
+            }
+            else
+            {
+                // Bottom
+                Debug.Log("On Bottom");
+                if (diffX >= 1)
+                {
+                    Debug.Log("On Right");
+                    // Right
+                    // Search -left-dig and right
+                    // ! Searching -left-dig
+                    Debug.Log("Searching -left-dig");
+                    searchY = -1;
+                    while (counter >= 0)
+                    {
+                        Tile temp = this.GetTile(new Vector2(selectedTile.y + searchY, selectedTile.x));
+                        if (temp == null || temp.value != selectedTile.value) break;
+                        __tiles.Add(temp);
+                        if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                        counter -= 1;
+                        searchY -= 1;
+                    }
+                    if (!foundOther)
+                    {
+                        counter = 9;
+                        if (__tiles.Count > 1)
+                            __tiles.RemoveRange(1, __tiles.Count - 1);
+                        // ! Searching right
+                        Debug.Log("Searching right");
+                        searchX = 1;
+                        while (counter >= 0)
+                        {
+                            Tile temp = this.GetTile(new Vector2(selectedTile.y, selectedTile.x + searchX));
+                            if (temp == null || temp.value != selectedTile.value) break;
+                            __tiles.Add(temp);
+                            if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                            counter -= 1;
+                            searchX += 1;
+                        }
+                    }
+
+                }
+                else
+                {
+                    Debug.Log("On Left and Center");
+                    // Left and center
+                    // Search -right-dif, -left-dig, and left
+                    // ! Searching -right-dig
+                    Debug.Log("Searching -right-dig");
+                    searchY = -1;
+                    searchX = -1;
+                    while (counter >= 0)
+                    {
+                        Tile temp = this.GetTile(new Vector2(selectedTile.y + searchY, selectedTile.x + searchX));
+                        if (temp == null || temp.value != selectedTile.value) break;
+                        __tiles.Add(temp);
+                        if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                        counter -= 1;
+                        searchY -= 1;
+                        searchX -= -1;
+                    }
+                    if (!foundOther)
+                    {
+                        counter = 9;
+                        if (__tiles.Count > 1)
+                            __tiles.RemoveRange(1, __tiles.Count - 1);
+                        // ! Searching -left-dig
+                        Debug.Log("Searching -left-dig");
+                        searchY = -1;
+                        while (counter >= 0)
+                        {
+                            Tile temp = this.GetTile(new Vector2(selectedTile.y + searchY, selectedTile.x));
+                            if (temp == null || temp.value != selectedTile.value) break;
+                            __tiles.Add(temp);
+                            if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                            counter -= 1;
+                            searchY -= 1;
+                        }
+                    }
+                    if (!foundOther)
+                    {
+                        counter = 9;
+                        if (__tiles.Count > 1)
+                            __tiles.RemoveRange(1, __tiles.Count - 1);
+                        // ! Searching left
+                        Debug.Log("Searching left");
+                        searchX = -1;
+                        while (counter >= 0)
+                        {
+                            Tile temp = this.GetTile(new Vector2(selectedTile.y + searchX, selectedTile.x));
+                            if (temp == null || temp.value != selectedTile.value) break;
+                            __tiles.Add(temp);
+                            if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
+                            counter -= 1;
+                            searchX -= -1;
+                        }
+                    }
+                }
+            }
+            if (foundOther)
+            {
+                // foreach(Tile t in __tiles) {
+                //     Debug.Log($"y={t.y}, x={t.x}, value={t.value}");
+                // }
+                Tile lastTile = __tiles[__tiles.Count - 1];
+                // Get the right directions
+                int dirX = 0;
+                int dirY = 0;
+                bool canMove = true;
+                if (newTile.x == lastTile.x)
+                {
+                    // Left dig
+                    dirX = 0;
+                    dirY = newTile.y - lastTile.y > 0 ? 1 : -1;
+                    canMove = true;
+                }
+                else if (newTile.y == lastTile.y)
+                {
+                    // Left-right
+                    dirX = newTile.x - lastTile.x > 0 ? 1 : -1;
+                    dirY = 0;
+                    canMove = true;
+                }
+                else if (newTile.x - lastTile.x == newTile.y - lastTile.y)
+                {
+                    // Right dig
+                    dirX = newTile.x - lastTile.x > 0 ? 1 : -1;
+                    dirY = newTile.y - lastTile.y > 0 ? 1 : -1;
+                    canMove = true;
+                }
+                else
+                {
+                    dirX = 0;
+                    dirY = 0;
+                    canMove = false;
+                }
+
+                for (int i = 0; i < __tiles.Count; i++)
+                {
+                    Tile targetTile = this.GetTile(new Vector2(__tiles[i].y + dirY, __tiles[i].x + dirX));
+                    if (targetTile.value != 0) { canMove = false; break; }
+                }
+                if (canMove)
+                {
+                    for (int i = 0; i < __tiles.Count; i++)
+                    {
+                        Tile targetTile = this.GetTile(new Vector2(__tiles[i].y + dirY, __tiles[i].x + dirX));
+                        this.MoveTile(__tiles[i], targetTile);
+                    }
+                    this.UnSelectTile();
+                    this.turnManager.HandTurn();
+                    return;
+                }
+            }
+            else
+            {
+                Debug.Log("not found");
+                return;
+            }
+        }
         else
         {
-            // Sideways
+            // Not a move 
+            return;
         }
-        // return selectedTiles;
     }
 
     private Tile MoveMultipleTiles(Tile newTile)

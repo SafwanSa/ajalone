@@ -13,7 +13,7 @@
 [*] Win/Lose
 [*] Exit game
 [*] Fix clicking on tiles at the end with wrong alignment
-[] Implement sideways move
+[*] Implement sideways move
 [*] Handle exit and re-join
     [*] Save game turn
     [*] Load proper turn
