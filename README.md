@@ -2,12 +2,13 @@
     [*] Winning UI
     [*] Loosing UI
     [*] Turn indicator
-    [] Loading screen
-    [] Lobby
-    [] Logo at the top
+    [*] Loading screen
+    [*] Lobby
+    [*] Logo at the top
     [] Sounds effects
     [] Style the board
-    [] Darker game board when result is shown
+    [] Credits
+    [*] Darker game board when result is shown
 [*] Create with random code
 [*] Make the game online
 [*] Create game

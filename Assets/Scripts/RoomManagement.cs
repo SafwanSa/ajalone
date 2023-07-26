@@ -18,7 +18,8 @@ public class RoomManagement : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        this.joinInput.onValueChanged.AddListener(delegate { OnValueChanged(); });
+        if (this.joinInput)
+            this.joinInput.onValueChanged.AddListener(delegate { OnValueChanged(); });
     }
 
     void SavePrefs()
