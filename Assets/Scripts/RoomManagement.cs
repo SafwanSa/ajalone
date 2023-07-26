@@ -15,6 +15,12 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     public string roomName;
     public bool isRoomCreated;
 
+
+    private void Start()
+    {
+        this.joinInput.onValueChanged.AddListener(delegate { OnValueChanged(); });
+    }
+
     void SavePrefs()
     {
         PlayerPrefs.SetString("roomName", this.roomName);
@@ -35,6 +41,12 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     public void JoinRoom()
     {
         this.roomName = this.joinInput.text.ToLower();
+        if (this.roomName == null || this.roomName == "")
+        {
+            this.errorMsg.text = "A roomname is required. If you don't know one, how will you join?";
+            return;
+        }
+
         this.isRoomCreated = false;
         this.SavePrefs();
         PhotonNetwork.JoinRoom(this.roomName);
@@ -102,5 +114,12 @@ public class RoomManagement : MonoBehaviourPunCallbacks
 
         return codeSB.ToString();
     }
+
+    public void OnValueChanged()
+    {
+        var upperText = this.joinInput.text.ToUpper();
+        if (upperText != this.joinInput.text) this.joinInput.text = upperText;
+    }
+
 }
 

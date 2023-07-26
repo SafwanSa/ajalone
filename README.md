@@ -2,6 +2,8 @@
     [*] Winning UI
     [*] Loosing UI
     [*] Turn indicator
+    [] Loading screen
+    [] Lobby
     [] Logo at the top
     [] Sounds effects
     [] Style the board
