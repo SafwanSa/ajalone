@@ -308,7 +308,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
             // Where to search
             // Move next till newTile is on the allowed positions
             bool foundOther = false;
-            int counter = 9;
+            int counter = 3;
             if (diffY >= 1)
             {
                 // Top
@@ -334,7 +334,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                     }
                     if (!foundOther)
                     {
-                        counter = 9;
+                        counter = 3;
                         if (__tiles.Count > 1)
                             __tiles.RemoveRange(1, __tiles.Count - 1);
                         // ! Searching left-dig
@@ -352,7 +352,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                     }
                     if (!foundOther)
                     {
-                        counter = 9;
+                        counter = 3;
                         if (__tiles.Count > 1)
                             __tiles.RemoveRange(1, __tiles.Count - 1);
                         // ! Searching right
@@ -360,7 +360,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                         searchX = 1;
                         while (counter >= 0)
                         {
-                            Tile temp = this.GetTile(new Vector2(selectedTile.y + searchX, selectedTile.x));
+                            Tile temp = this.GetTile(new Vector2(selectedTile.y, selectedTile.x + searchX));
                             if (temp == null || temp.value != selectedTile.value) break;
                             __tiles.Add(temp);
                             if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
@@ -388,7 +388,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                     }
                     if (!foundOther)
                     {
-                        counter = 9;
+                        counter = 3;
                         if (__tiles.Count > 1)
                             __tiles.RemoveRange(1, __tiles.Count - 1);
                         // ! Searching left
@@ -430,7 +430,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                     }
                     if (!foundOther)
                     {
-                        counter = 9;
+                        counter = 3;
                         if (__tiles.Count > 1)
                             __tiles.RemoveRange(1, __tiles.Count - 1);
                         // ! Searching right
@@ -465,11 +465,11 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                         if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
                         counter -= 1;
                         searchY -= 1;
-                        searchX -= -1;
+                        searchX -= 1;
                     }
                     if (!foundOther)
                     {
-                        counter = 9;
+                        counter = 3;
                         if (__tiles.Count > 1)
                             __tiles.RemoveRange(1, __tiles.Count - 1);
                         // ! Searching -left-dig
@@ -487,7 +487,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                     }
                     if (!foundOther)
                     {
-                        counter = 9;
+                        counter = 3;
                         if (__tiles.Count > 1)
                             __tiles.RemoveRange(1, __tiles.Count - 1);
                         // ! Searching left
@@ -495,19 +495,19 @@ public class GridManager : MonoBehaviour, IOnEventCallback
                         searchX = -1;
                         while (counter >= 0)
                         {
-                            Tile temp = this.GetTile(new Vector2(selectedTile.y + searchX, selectedTile.x));
+                            Tile temp = this.GetTile(new Vector2(selectedTile.y, selectedTile.x + searchX));
                             if (temp == null || temp.value != selectedTile.value) break;
                             __tiles.Add(temp);
                             if (this.IsOnAllowed(newTile, temp)) { foundOther = true; break; }
                             counter -= 1;
-                            searchX -= -1;
+                            searchX -= 1;
                         }
                     }
                 }
             }
             if (foundOther)
             {
-                // foreach(Tile t in __tiles) {
+                // foreach (Tile t in __tiles) {
                 //     Debug.Log($"y={t.y}, x={t.x}, value={t.value}");
                 // }
                 Tile lastTile = __tiles[__tiles.Count - 1];
