@@ -63,16 +63,16 @@ public class BoardUI : MonoBehaviour
 
     public void UpdateWinnerText(string winner)
     {
-        this.winnerText.text = $"{winner} wins...";
+        this.winnerText.text = $"{winner} wins";
         this.resultLayout.SetActive(true);
-        this.backgroundsContainer.SetActive(false);
-        this.rowsContainer.SetActive(false);
-        this.detailsContainer.SetActive(false);
-        this.outsContainer.SetActive(false);
-        for (int i = 0; i < this.boardGenerator.rows.Count; i++)
-        {
-            this.boardGenerator.rows[i].SetActive(false);
-        }
+        // this.backgroundsContainer.SetActive(false);
+        // this.rowsContainer.SetActive(false);
+        // this.detailsContainer.SetActive(false);
+        // this.outsContainer.SetActive(false);
+        // for (int i = 0; i < this.boardGenerator.rows.Count; i++)
+        // {
+        //     this.boardGenerator.rows[i].SetActive(false);
+        // }
         // foreach (KeyValuePair<Vector2, Tile> pair in this.tiles)
         // {
         //     pair.Value.gameObject.SetActive(false);
