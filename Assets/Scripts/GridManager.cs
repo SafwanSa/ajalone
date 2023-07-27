@@ -69,7 +69,7 @@ public class GridManager : MonoBehaviour, IOnEventCallback
 
     public void SelectTile(Tile tile)
     {
-        if (PhotonNetwork.CurrentRoom.PlayerCount > 1 || true)  // TODO: Remove this
+        if (PhotonNetwork.CurrentRoom.PlayerCount > 1)
         {
             if (this.selectedTile == null && tile.value == this.player)
             {

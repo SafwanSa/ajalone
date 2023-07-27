@@ -38,7 +38,7 @@ public class TurnManager : MonoBehaviour, IOnEventCallback
     public void HandTurn()
     {
         int turn = this.turn == 1 ? 2 : 1;
-        turn = turn == 1 ? 2 : 1; // TODO: Remove this
+        // turn = turn == 1 ? 2 : 1;
         Debug.Log("Turn handed: " + this.turn);
         Events.RaiseEventToAll(Events.TogglePlayerTurnEvent, new object[] { turn });
         this.gridManager.boardGenerator.UpdateBoardState(); // This raises an event to the master to update BoardState

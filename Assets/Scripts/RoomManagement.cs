@@ -20,6 +20,8 @@ public class RoomManagement : MonoBehaviourPunCallbacks
     {
         if (this.joinInput)
             this.joinInput.onValueChanged.AddListener(delegate { OnValueChanged(); });
+        if (this.errorMsg)
+            this.errorMsg.gameObject.transform.parent.gameObject.SetActive(false);
     }
 
     void SavePrefs()
@@ -44,6 +46,7 @@ public class RoomManagement : MonoBehaviourPunCallbacks
         this.roomName = this.joinInput.text.ToLower();
         if (this.roomName == null || this.roomName == "")
         {
+            this.errorMsg.gameObject.transform.parent.gameObject.SetActive(true);
             this.errorMsg.text = "A roomname is required. If you don't know one, how will you join?";
             return;
         }
@@ -73,6 +76,7 @@ public class RoomManagement : MonoBehaviourPunCallbacks
 
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
+        this.errorMsg.gameObject.transform.parent.gameObject.SetActive(true);
         errorMsg.text = message;
     }
 
