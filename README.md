@@ -6,8 +6,8 @@
     [*] Lobby
     [*] Logo at the top
     [] Sounds effects
-    [] Style the board
-    [] Credits
+    [*] Style the board
+    [*] Credits
     [*] Darker game board when result is shown
 [*] Create with random code
 [*] Make the game online
