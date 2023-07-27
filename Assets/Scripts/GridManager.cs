@@ -31,12 +31,12 @@ public class GridManager : MonoBehaviour, IOnEventCallback
 
     private void HandleCheckWinnerEvent()
     {
-        if (this.boardGenerator.blackOutsIndicesFilled.Count == 2)
+        if (this.boardGenerator.blackOutsIndicesFilled.Count == 6)
         {
             // White wins
             this.boardUI.UpdateWinnerText("White");
         }
-        else if (this.boardGenerator.whiteOutsIndicesFilled.Count == 2)
+        else if (this.boardGenerator.whiteOutsIndicesFilled.Count == 6)
         {
             // Black wins
             this.boardUI.UpdateWinnerText("Black");
