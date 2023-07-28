@@ -104,6 +104,16 @@ public class TurnManager : MonoBehaviour, IOnEventCallback
         return this.GetCreatorId() == player.UserId.ToString();
     }
 
+
+    public bool IsMyTurn()
+    {
+        if (this.IsRoomCreator(PhotonNetwork.LocalPlayer))
+        {
+            return this.turn == 1;
+        }
+        return this.turn == 2;
+    }
+
     private void OnEnable()
     {
         PhotonNetwork.AddCallbackTarget(this);

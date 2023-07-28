@@ -5,7 +5,7 @@
     [*] Loading screen
     [*] Lobby
     [*] Logo at the top
-    [] Sounds effects
+    [*] Sounds effects
     [*] Style the board
     [*] Credits
     [*] Darker game board when result is shown
