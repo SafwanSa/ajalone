@@ -18,9 +18,11 @@ public class Tile : MonoBehaviour, IOnEventCallback
     public int x, y;
     public int value = 0;
     [SerializeField] private GridManager gridManager;
+    [SerializeField] private AudioSource audio;
 
     public void Init(int x, int y, int value)
     {
+        this.audio = GetComponent<AudioSource>();
         this.gridManager = FindObjectOfType<GridManager>();
         this.x = x;
         this.y = y;
@@ -64,6 +66,8 @@ public class Tile : MonoBehaviour, IOnEventCallback
             {
                 this.value = value;
                 this.SetColor();
+                if (this.value != 0)
+                    this.PlaySound();
             }
         }
     }
@@ -88,5 +92,10 @@ public class Tile : MonoBehaviour, IOnEventCallback
     private void OnDisable()
     {
         PhotonNetwork.RemoveCallbackTarget(this);
+    }
+
+    public void PlaySound()
+    {
+        this.audio.Play(0);
     }
 }

@@ -13,9 +13,11 @@ public class TurnManager : MonoBehaviour, IOnEventCallback
 
     [SerializeField] private GridManager gridManager;
     [SerializeField] private int turn;
+    [SerializeField] private AudioSource audio;
 
     private void Start()
     {
+        this.audio = GetComponent<AudioSource>();
         if (PhotonNetwork.IsMasterClient)
         {
             this.turn = 1;
@@ -60,6 +62,8 @@ public class TurnManager : MonoBehaviour, IOnEventCallback
         this.gridManager.player = _turn;
         // Update UI
         this.gridManager.boardUI.UpdatePlayerTurn(_turn);
+        // Play sound
+        this.audio.Play(0);
         // Save the last turn in props
         if (PhotonNetwork.IsMasterClient) this.UpdateTurnState();
     }
