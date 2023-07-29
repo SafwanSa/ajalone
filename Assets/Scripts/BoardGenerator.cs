@@ -112,10 +112,12 @@ public class BoardGenerator : MonoBehaviour, IOnEventCallback
         );
         spawnedTile.name = spot.name;
         spawnedTile.transform.SetParent(spot.transform);
+        // spawnedTile.gameObject.transform.scale = new Vector3(1, 1, 1);
         RectTransform trans = spawnedTile.gameObject.AddComponent<RectTransform>();
-        trans.anchorMin = new Vector2(0f, 0f);
-        trans.anchorMax = new Vector2(1f, 1f);
+        trans.anchorMin = new Vector2(0.5f, 0.5f);
+        trans.anchorMax = new Vector2(0.5f, 0.5f);
         trans.pivot = new Vector2(0.5f, 0.5f);
+        trans.localScale = new Vector3(1f, 1f, 1f);
         RectTransformExtensions.SetLeft(trans, 20);
         RectTransformExtensions.SetTop(trans, 25);
         RectTransformExtensions.SetRight(trans, 20);
